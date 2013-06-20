@@ -1,6 +1,6 @@
 #include "archivewidget.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 ArchiveWidget::ArchiveWidget(QString init, QString date, QString time, QWidget *parent) :
     ListWidget(init,parent)

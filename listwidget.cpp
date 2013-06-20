@@ -1,7 +1,7 @@
 #include "listwidget.h"
 
 #include <QListWidgetItem>
-#include <QtGui>
+#include <QtWidgets>
 #include <QStringList>
 
 ListWidget::ListWidget(QString init, QWidget *parent) :

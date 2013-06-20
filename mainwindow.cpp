@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QAbstractItemModel>
 #include <QStringListModel>
 #include <QtDebug>
