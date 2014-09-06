@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets
+QT       += core gui widgets xml
 
 TARGET = TaskManager
 TEMPLATE = app
@@ -12,11 +12,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    listwidget.cpp \
-    archivewidget.cpp \
-    dataentrywidget.cpp
+    listview.cpp \
+    taskitem.cpp
 
 HEADERS  += mainwindow.h \
-    listwidget.h \
-    archivewidget.h \
-    dataentrywidget.h
+    listview.h \
+    taskitem.h
+
+FORMS += \
+    mainwindow.ui \
+    archive.ui \
+    preferencesdialog.ui

@@ -1,99 +1,77 @@
 #include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "ui_archive.h"
+#include "ui_preferencesdialog.h"
+
+#include "taskitem.h"
 
 #include <QtWidgets>
 #include <QAbstractItemModel>
 #include <QStringListModel>
 #include <QtDebug>
-
-#include "listwidget.h"
-#include "archivewidget.h"
-#include "dataentrywidget.h"
+#include <QXmlStreamWriter>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow),
+      mDateFormat("MM/dd/yyyy")
 {
-    settings = new QSettings("TaskManager", "Adam Baker");
+    ui->setupUi(this);
 
-    QWidget *widget = new QWidget;
-    QGridLayout *layout = new QGridLayout;
-    urgentImportant = new ListWidget(settings->value("urgent_important").toString());
-    urgentNotImportant = new ListWidget(settings->value("urgent_notimportant").toString());
-    notUrgentImportant = new ListWidget(settings->value("noturgent_important").toString());
-    notUrgentNotImportant = new ListWidget(settings->value("noturgent_notimportant").toString());
-    archive = new ArchiveWidget(settings->value("archive").toString(),dateFormat,timeFormat);
+    mSettings = new QSettings("TaskManager", "Adam Baker");
 
-    archiveDock = new QDockWidget(tr("Archive"),this,Qt::Drawer);
-    QVBoxLayout *archiveLayout = new QVBoxLayout;
-    QPushButton *close = new QPushButton(tr("Close"));
-    QPushButton *deleteAll = new QPushButton(tr("Remove all"));
-    archiveLayout->addWidget(archive);
-    archiveLayout->addWidget(close);
-    archiveLayout->addWidget(deleteAll);
+    mUrgentImportant.setItemPrototype( new TaskItem("Prototype") );
+    mUrgentNotImportant.setItemPrototype( new TaskItem("Prototype") );
+    mNotUrgentImportant.setItemPrototype( new TaskItem("Prototype") );
+    mNotUrgentNotImportant.setItemPrototype( new TaskItem("Prototype") );
+
+    ui->urgentImportant->setArchive(&mArchive);
+    ui->urgentNotImportant->setArchive(&mArchive);
+    ui->notUrgentImportant->setArchive(&mArchive);
+    ui->notUrgentNotImportant->setArchive(&mArchive);
+
+    addItemsToModel( mSettings->value("urgent_important").toString() , &mUrgentImportant);
+    addItemsToModel( mSettings->value("urgent_notimportant").toString() , &mUrgentNotImportant);
+    addItemsToModel( mSettings->value("noturgent_important").toString() , &mNotUrgentImportant );
+    addItemsToModel( mSettings->value("noturgent_notimportant").toString() , &mNotUrgentNotImportant );
+
+    ui->urgentImportant->setModel( &mUrgentImportant );
+    ui->urgentNotImportant->setModel( &mUrgentNotImportant );
+    ui->notUrgentImportant->setModel( &mNotUrgentImportant );
+    ui->notUrgentNotImportant->setModel( &mNotUrgentNotImportant );
+
     QWidget *archiveWidget = new QWidget;
-    archiveWidget->setLayout(archiveLayout);
-    archiveDock->setWidget(archiveWidget);
-    connect(close,SIGNAL(clicked()),archiveDock,SLOT(hide()));
-    connect(deleteAll,SIGNAL(clicked()),this,SLOT(removeAllFromArchive()));
+    Ui::Archive *archiveUi = new Ui::Archive;
+    archiveUi->setupUi(archiveWidget);
+    archiveUi->treeView->setModel(&mArchive);
+    mArchiveDock = new QDockWidget(tr("Archive"),this,Qt::Drawer);
+    mArchiveDock->setWidget(archiveWidget);
+    connect(archiveUi->close,SIGNAL(clicked()),mArchiveDock,SLOT(hide()));
+    connect(archiveUi->removeAll,SIGNAL(clicked()),this,SLOT(removeAllFromArchive()));
 
-    urgentImportant->setStyleSheet("QListWidget{ border: 3px solid red; }");
-    urgentNotImportant->setStyleSheet("QListWidget{ border: 3px solid brown; }");
-    notUrgentImportant->setStyleSheet("QListWidget{ border: 3px solid blue; }");
-    notUrgentNotImportant->setStyleSheet("QListWidget{ border: 3px solid green; }");
+    connect(ui->urgentImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
+    connect(ui->urgentNotImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
+    connect(ui->notUrgentImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
+    connect(ui->notUrgentNotImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
 
-    connect(urgentImportant,SIGNAL(addToArchive(QString,Qt::CheckState)),archive,SLOT(addToArchive(QString,Qt::CheckState)));
-    connect(urgentNotImportant,SIGNAL(addToArchive(QString,Qt::CheckState)),archive,SLOT(addToArchive(QString,Qt::CheckState)));
-    connect(notUrgentImportant,SIGNAL(addToArchive(QString,Qt::CheckState)),archive,SLOT(addToArchive(QString,Qt::CheckState)));
-    connect(notUrgentNotImportant,SIGNAL(addToArchive(QString,Qt::CheckState)),archive,SLOT(addToArchive(QString,Qt::CheckState)));
+    connect(ui->urgentImportant,SIGNAL(preferences()),this,SLOT(preferences()));
+    connect(ui->urgentNotImportant,SIGNAL(preferences()),this,SLOT(preferences()));
+    connect(ui->notUrgentImportant,SIGNAL(preferences()),this,SLOT(preferences()));
+    connect(ui->notUrgentNotImportant,SIGNAL(preferences()),this,SLOT(preferences()));
+    connect(archiveUi->treeView,SIGNAL(preferences()),this,SLOT(preferences()));
 
-    connect(urgentImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
-    connect(urgentNotImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
-    connect(notUrgentImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
-    connect(notUrgentNotImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
+    connect(ui->urgentImportant,SIGNAL(save()),this,SLOT(saveData()));
+    connect(ui->urgentNotImportant,SIGNAL(save()),this,SLOT(saveData()));
+    connect(ui->notUrgentImportant,SIGNAL(save()),this,SLOT(saveData()));
+    connect(ui->notUrgentNotImportant,SIGNAL(save()),this,SLOT(saveData()));
+    connect(archiveUi->treeView,SIGNAL(save()),this,SLOT(saveData()));
 
-    connect(urgentImportant,SIGNAL(preferences()),this,SLOT(preferences()));
-    connect(urgentNotImportant,SIGNAL(preferences()),this,SLOT(preferences()));
-    connect(notUrgentImportant,SIGNAL(preferences()),this,SLOT(preferences()));
-    connect(notUrgentNotImportant,SIGNAL(preferences()),this,SLOT(preferences()));
-    connect(archive,SIGNAL(preferences()),this,SLOT(preferences()));
-
-    connect(urgentImportant,SIGNAL(save()),this,SLOT(saveData()));
-    connect(urgentNotImportant,SIGNAL(save()),this,SLOT(saveData()));
-    connect(notUrgentImportant,SIGNAL(save()),this,SLOT(saveData()));
-    connect(notUrgentNotImportant,SIGNAL(save()),this,SLOT(saveData()));
-    connect(archive,SIGNAL(save()),this,SLOT(saveData()));
-
-    dateFormat = settings->value("date_format","MM/dd/yyyy").toString();
-    timeFormat = settings->value("time_format","").toString();
-
-    archive->setDateFormat(dateFormat);
-    archive->setTimeFormat(timeFormat);
-
-    ul = new QLabel( settings->value("ul_label",tr("Urgent & Important")).toString() );
-    layout->addWidget(ul,0,0);
-    layout->addWidget(urgentImportant,1,0);
-
-    ur = new QLabel( settings->value("ur_label",tr("Urgent, Not Important")).toString() );
-    layout->addWidget(ur,0,1);
-    layout->addWidget(urgentNotImportant,1,1);
-
-    ll = new QLabel( settings->value("ll_label",tr("Important, Not Urgent")).toString() );
-    layout->addWidget(ll,2,0);
-    layout->addWidget(notUrgentImportant,3,0);
-
-    lr = new QLabel( settings->value("lr_label",tr("Follow up at some point")).toString() );
-    layout->addWidget(lr,2,1);
-    layout->addWidget(notUrgentNotImportant,3,1);
-
-    widget->setLayout(layout);
-
-    this->setCentralWidget(widget);
-
-    this->setWindowTitle(tr("Task Manager"));
+    propagateDateTime();
 }
 
 MainWindow::~MainWindow()
 {
-    delete settings;
+    delete mSettings;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -102,48 +80,154 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
+void MainWindow::addItemsToModel(const QString &string, QStandardItemModel *model) const
+{
+    QStringList split = string.split("\n");
+    for(int i=0; i<split.count(); i++)
+    {
+        QStringList tmp = split.at(i).split(QChar(0xfeff));
+        if(tmp.count() < 2) { continue; }
+
+        TaskItem * item = new TaskItem( tmp.at(1) );
+//        item->setCheckState((Qt::CheckState)tmp.at(0).toInt() );
+        model->appendRow(item);
+
+//        QStandardItem * item = new TaskItem( tmp.at(1) );
+//        item->setCheckState((Qt::CheckState)tmp.at(0).toInt() );
+//        model->appendRow(item);
+
+    }
+}
+
+void MainWindow::serializeModel(QStandardItemModel *model, QXmlStreamWriter * stream) const
+{
+    for(int i=0; i<model->rowCount(); i++)
+    {
+        serializeItem( model->item(i) , stream );
+    }
+}
+
+void MainWindow::serializeItem(QStandardItem *item, QXmlStreamWriter *stream) const
+{
+    stream->writeStartElement("task");
+    stream->writeAttribute("completed" , item->checkState() == Qt::Checked ? "yes" : "no" );
+    stream->writeAttribute("label" , item->data(MainWindow::Label).toString() );
+    if( item->data().toDateTime().isValid() )
+    {
+        stream->writeAttribute("date", item->data(MainWindow::Date).toDateTime().toString(Qt::ISODate) );
+    }
+    for(int i=0; i<item->rowCount(); i++)
+    {
+        serializeItem( item->child(i), stream );
+    }
+    stream->writeEndElement(); // task
+}
+
 void MainWindow::saveData()
 {
-    settings->setValue("urgent_important", urgentImportant->serialize() );
-    settings->setValue("urgent_notimportant", urgentNotImportant->serialize() );
-    settings->setValue("noturgent_important", notUrgentImportant->serialize() );
-    settings->setValue("noturgent_notimportant", notUrgentNotImportant->serialize() );
-    settings->setValue("archive", archive->serialize() );
+    QFile outFile( dataFilePath() );
+    if( !outFile.open(QFile::WriteOnly | QFile::Text) )
+        return;
 
-    settings->setValue("ul_label", ul->text() );
-    settings->setValue("ur_label", ur->text() );
-    settings->setValue("ll_label", ll->text() );
-    settings->setValue("lr_label", lr->text() );
+    QXmlStreamWriter stream(&outFile);
+    stream.setCodec("UTF-8");
+    stream.setAutoFormatting(true);
+    stream.writeStartDocument();
+    stream.writeStartElement("task-manager");
 
-    settings->setValue("date_format", dateFormat );
-    settings->setValue("time_format", timeFormat );
+    stream.writeTextElement("ul-label", ui->ul->text() );
+    stream.writeTextElement("ur-label", ui->ur->text() );
+    stream.writeTextElement("ll-label", ui->ll->text() );
+    stream.writeTextElement("lr-label", ui->lr->text() );
+    stream.writeTextElement("date-format", mDateFormat );
+
+    stream.writeStartElement("urgent-important");
+    serializeModel(&mUrgentImportant,&stream);
+    stream.writeEndElement(); // urgent-important
+
+    stream.writeStartElement("urgent-not-important");
+    serializeModel(&mUrgentNotImportant,&stream);
+    stream.writeEndElement(); // urgent-not-important
+
+    stream.writeStartElement("not-urgent-important");
+    serializeModel(&mNotUrgentImportant,&stream);
+    stream.writeEndElement(); // not-urgent-important
+
+    stream.writeStartElement("not-urgent-not-important");
+    serializeModel(&mNotUrgentNotImportant,&stream);
+    stream.writeEndElement(); // not-urgent-not-important
+
+    stream.writeStartElement("archive");
+    serializeModel(&mArchive,&stream);
+    stream.writeEndElement(); // archive
+
+    stream.writeEndElement(); // task-manager
+    stream.writeEndDocument();
+}
+
+void MainWindow::readData()
+{
+    QFile file(dataFilePath());
+    file.open(QFile::ReadOnly);
+    QXmlStreamReader stream(&file);
+
+    while (!stream.atEnd())
+    {
+        stream.readNext();
+        QString name = stream.name().toString();
+        if( stream.tokenType() == QXmlStreamReader::StartElement )
+        {
+            if( name == "ul-label" )
+            {
+            }
+        }
+    }
+}
+
+QString MainWindow::dataFilePath() const
+{
+    return QDir::home().absoluteFilePath("TaskManager.xml");
 }
 
 void MainWindow::showArchive()
 {
-    archiveDock->show();
+    mArchiveDock->show();
 }
 
 void MainWindow::preferences()
 {
-    DataEntryWidget dew(ul->text(),ur->text(),ll->text(),lr->text(), dateFormat, timeFormat, this);
-    if(dew.exec()==QDialog::Accepted)
+    QDialog *dlg = new QDialog;
+    Ui::PreferencesDialog *preferencesUi = new Ui::PreferencesDialog;
+    preferencesUi->setupUi(dlg);
+    preferencesUi->ul->setText( ui->ul->text() );
+    preferencesUi->ur->setText( ui->ur->text() );
+    preferencesUi->ll->setText( ui->ll->text() );
+    preferencesUi->lr->setText( ui->lr->text() );
+    preferencesUi->date->setText( mDateFormat );
+    if( dlg->exec() )
     {
-	ul->setText( dew.ul->text() );
-	ur->setText( dew.ur->text() );
-	ll->setText( dew.ll->text() );
-	lr->setText( dew.lr->text() );
+        ui->ul->setText( preferencesUi->ul->text() );
+        ui->ur->setText( preferencesUi->ur->text() );
+        ui->ll->setText( preferencesUi->ll->text() );
+        ui->lr->setText( preferencesUi->lr->text() );
 
-	dateFormat = dew.dateFormat->text();
-	timeFormat = dew.timeFormat->text();
-
-	archive->setDateFormat(dateFormat);
-	archive->setTimeFormat(timeFormat);
+        mDateFormat = preferencesUi->date->text();
+        propagateDateTime();
     }
 }
 
 void MainWindow::removeAllFromArchive()
 {
     if( QMessageBox::Yes == QMessageBox::question(this, tr("Task Manager"), tr("Are you sure you want to clear the archive?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No ) )
-	archive->clear();
+    {
+        mArchive.clear();
+    }
+}
+
+void MainWindow::propagateDateTime()
+{
+    ui->urgentImportant->setDateTimeFormat(mDateFormat);
+    ui->urgentNotImportant->setDateTimeFormat(mDateFormat);
+    ui->notUrgentImportant->setDateTimeFormat(mDateFormat);
+    ui->notUrgentNotImportant->setDateTimeFormat(mDateFormat);
 }
