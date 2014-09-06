@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>721</width>
-    <height>254</height>
+    <width>765</width>
+    <height>220</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -65,24 +65,21 @@
      <item row="4" column="0">
       <widget class="QLabel" name="dateFormatEGDddMMMMDYyBecomesSunJuly2069Label">
        <property name="text">
-        <string>Date format (e.g. ddd MMMM d yy becomes Sun July 20 69)</string>
+        <string>Date format </string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
       <widget class="QLineEdit" name="date"/>
      </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="timeFormatEGHhMmSsZzzBecomes141309042Label">
-       <property name="text">
-        <string>Time format (e.g. hh:mm:ss.zzz becomes 14:13:09.042)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="time"/>
-     </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>(e.g. ddd MMMM d yy becomes Sun July 20 69;  hh:mm:ss.zzz becomes 14:13:09.042)</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

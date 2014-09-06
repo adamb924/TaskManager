@@ -48,7 +48,6 @@ void TaskItem::setData(const QVariant &value, int role)
     }
     else if( role == Qt::CheckStateRole )
     {
-        qDebug() << "check";
         if( checkState() == Qt::Checked )
         {
             mDate = QDateTime::currentDateTime();
