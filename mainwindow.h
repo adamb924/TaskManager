@@ -30,6 +30,8 @@ public slots:
     void saveData();
     void removeAllFromArchive();
 
+    void itemChanged(QStandardItem * item);
+
 private:
     Ui::MainWindow *ui;
     QSettings *mSettings;
@@ -41,7 +43,7 @@ private:
 
 
     void closeEvent(QCloseEvent *event);
-    void addItemsToModel(const QString & string, QStandardItemModel * model) const;
+    void addItemsToModel(const QString & string, QStandardItemModel *model) const;
     void serializeModel(QStandardItemModel * model, QXmlStreamWriter *stream) const;
     void serializeItem(QStandardItem * item, QXmlStreamWriter *stream) const;
     void propagateDateTime();

@@ -3,8 +3,6 @@
 #include "ui_archive.h"
 #include "ui_preferencesdialog.h"
 
-#include "taskitem.h"
-
 #include <QtWidgets>
 #include <QAbstractItemModel>
 #include <QStringListModel>
@@ -20,10 +18,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     mSettings = new QSettings("TaskManager", "Adam Baker");
 
-    mUrgentImportant.setItemPrototype( new TaskItem("Prototype") );
-    mUrgentNotImportant.setItemPrototype( new TaskItem("Prototype") );
-    mNotUrgentImportant.setItemPrototype( new TaskItem("Prototype") );
-    mNotUrgentNotImportant.setItemPrototype( new TaskItem("Prototype") );
+    connect( &mUrgentImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
+    connect( &mUrgentNotImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
+    connect( &mNotUrgentImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
+    connect( &mNotUrgentNotImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
 
     ui->urgentImportant->setArchive(&mArchive);
     ui->urgentNotImportant->setArchive(&mArchive);
@@ -88,14 +86,11 @@ void MainWindow::addItemsToModel(const QString &string, QStandardItemModel *mode
         QStringList tmp = split.at(i).split(QChar(0xfeff));
         if(tmp.count() < 2) { continue; }
 
-        TaskItem * item = new TaskItem( tmp.at(1) );
-//        item->setCheckState((Qt::CheckState)tmp.at(0).toInt() );
+        QStandardItem * item = new QStandardItem( tmp.at(1) );
+        item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
+        item->setCheckState((Qt::CheckState)tmp.at(0).toInt() );
+        item->setData( false , Qt::UserRole + 2 );
         model->appendRow(item);
-
-//        QStandardItem * item = new TaskItem( tmp.at(1) );
-//        item->setCheckState((Qt::CheckState)tmp.at(0).toInt() );
-//        model->appendRow(item);
-
     }
 }
 
@@ -179,6 +174,24 @@ void MainWindow::readData()
         {
             if( name == "ul-label" )
             {
+                ui->ul->setText( stream.readElementText() );
+            }
+            else if( name == "ur-label" )
+            {
+                ui->ur->setText( stream.readElementText() );
+            }
+            else if( name == "ll-label" )
+            {
+                ui->ll->setText( stream.readElementText() );
+            }
+            else if( name == "lr-label" )
+            {
+                ui->lr->setText( stream.readElementText() );
+            }
+            else if( name == "date-format" )
+            {
+                mDateFormat = stream.readElementText();
+                propagateDateTime();
             }
         }
     }
@@ -221,6 +234,21 @@ void MainWindow::removeAllFromArchive()
     if( QMessageBox::Yes == QMessageBox::question(this, tr("Task Manager"), tr("Are you sure you want to clear the archive?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No ) )
     {
         mArchive.clear();
+    }
+}
+
+void MainWindow::itemChanged(QStandardItem *item)
+{
+    if( item->checkState() == Qt::Checked && item->data(Qt::UserRole+2).toBool() == false )
+    {
+        item->setData( item->text() , Qt::UserRole + 1 );
+        item->setData( true , Qt::UserRole + 2 );
+        item->setText( tr("%1 (%2)").arg( item->data(Qt::UserRole + 1 ).toString() ).arg( QDateTime::currentDateTime().toString( mDateFormat ) ) );
+    }
+    else if( item->checkState() == Qt::Unchecked && item->data(Qt::UserRole+2).toBool() == true )
+    {
+        item->setData( false , Qt::UserRole + 2 );
+        item->setText( item->data(Qt::UserRole + 1 ).toString() );
     }
 }
 

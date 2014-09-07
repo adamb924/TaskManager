@@ -12,7 +12,7 @@ class ListView : public QTreeView
 public:
     explicit ListView(QWidget *parent = 0);
 
-    void setArchive(QStandardItemModel * archive);
+    void setArchive(QStandardItemModel *archive);
     void setDateTimeFormat(const QString & date);
 
 signals:

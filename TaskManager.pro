@@ -12,12 +12,10 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    listview.cpp \
-    taskitem.cpp
+    listview.cpp
 
 HEADERS  += mainwindow.h \
-    listview.h \
-    taskitem.h
+    listview.h
 
 FORMS += \
     mainwindow.ui \

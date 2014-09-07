@@ -1,5 +1,4 @@
 #include "listview.h"
-#include "taskitem.h"
 
 #include <QMenu>
 #include <QStandardItemModel>
@@ -7,6 +6,8 @@
 #include <QHeaderView>
 #include <QDate>
 #include <QTime>
+
+#include <QtDebug>
 
 ListView::ListView(QWidget *parent) : QTreeView(parent)
 {
@@ -66,7 +67,7 @@ void ListView::archive()
 void ListView::insert()
 {
     QStandardItemModel * m = qobject_cast<QStandardItemModel *>(model());
-    TaskItem *item = new TaskItem( "" );
+    QStandardItem *item = new QStandardItem( "" );
     m->appendRow(item);
     edit( m->indexFromItem(item) );
 }
@@ -78,7 +79,7 @@ void ListView::insertSubItem()
     if( selection.isEmpty() ) { return; }
     QStandardItem *parent = m->itemFromIndex( selection.first() );
 
-    TaskItem *item = new TaskItem( "" );
+    QStandardItem *item = new QStandardItem( "" );
     expand(selection.first());
     parent->appendRow(item);
     edit( m->indexFromItem(item) );
