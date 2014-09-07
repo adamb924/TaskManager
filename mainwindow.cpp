@@ -86,7 +86,7 @@ void MainWindow::addItemsToModel(const QString &string, QStandardItemModel *mode
     {
         QStringList tmp = split.at(i).split(QChar(0xfeff));
         if(tmp.count() < 2) { continue; }
-        model->appendRow( newItem( (Qt::CheckState)tmp.at(0).toInt() == Qt::Checked , tmp.at(1) ) );
+        model->appendRow( newItem( (Qt::CheckState)tmp.at(0).toInt() == Qt::Checked , tmp.at(1) , mDateFormat ) );
     }
 }
 
@@ -102,10 +102,14 @@ void MainWindow::serializeItem(QStandardItem *item, QXmlStreamWriter *stream) co
 {
     stream->writeStartElement("task");
     stream->writeAttribute("completed" , item->checkState() == Qt::Checked ? "yes" : "no" );
-    stream->writeAttribute("label" , item->data( MainWindow::Label ).toString() );
     if( item->data( MainWindow::Date ).toDateTime().isValid() )
     {
+        stream->writeAttribute("label" , item->data( MainWindow::Label ).toString() );
         stream->writeAttribute("date" , item->data( MainWindow::Date ).toDateTime().toString(Qt::ISODate) );
+    }
+    else
+    {
+        stream->writeAttribute("label", item->text() );
     }
     for(int i=0; i<item->rowCount(); i++)
     {
@@ -210,7 +214,7 @@ void MainWindow::readXmlData()
             }
             else if( name == "task" )
             {
-                QStandardItem * item = newItem( attributes.value("completed").toString() == "yes", attributes.value("label").toString(), attributes.hasAttribute("date") ? QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate ) : QDateTime() );
+                QStandardItem * item = newItem( attributes.value("completed").toString() == "yes", attributes.value("label").toString() , mDateFormat, attributes.hasAttribute("date") ? QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate ) : QDateTime() );
                 if( currentItem == 0 )
                 {
                     currentModel->appendRow( item );
@@ -251,7 +255,7 @@ QString MainWindow::dataFilePath() const
     return QDir::home().absoluteFilePath("TaskManager.xml");
 }
 
-QStandardItem *MainWindow::newItem(bool checked, const QString &label, const QDateTime &date) const
+QStandardItem *MainWindow::newItem(bool checked, const QString &label, const QString & dateFormat, const QDateTime &date)
 {
     QStandardItem * item = new QStandardItem();
     item->setData( false, MainWindow::JustChanged );
@@ -259,7 +263,7 @@ QStandardItem *MainWindow::newItem(bool checked, const QString &label, const QDa
     if(date.isValid())
     {
         item->setData( date , MainWindow::Date );
-        item->setText( tr("%1 (%2)").arg( label ).arg( date.toString( mDateFormat ) ) );
+        item->setText( tr("%1 (%2)").arg( label ).arg( date.toString( dateFormat ) ) );
     }
     else
     {

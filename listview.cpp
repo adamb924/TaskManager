@@ -1,4 +1,5 @@
 #include "listview.h"
+#include "mainwindow.h"
 
 #include <QMenu>
 #include <QStandardItemModel>
@@ -67,10 +68,8 @@ void ListView::archive()
 void ListView::insert()
 {
     QStandardItemModel * m = qobject_cast<QStandardItemModel *>(model());
-    QStandardItem *item = new QStandardItem( "" );
-    item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
-    item->setCheckState(Qt::Unchecked);
-    m->appendRow(item);
+    QStandardItem *item = mMainWnd->newItem(false, "", mDateFormat);
+    m->appendRow( item ) ;
     edit( m->indexFromItem(item) );
 }
 
@@ -81,9 +80,7 @@ void ListView::insertSubItem()
     if( selection.isEmpty() ) { return; }
     QStandardItem *parent = m->itemFromIndex( selection.first() );
 
-    QStandardItem *item = new QStandardItem( "" );
-    item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
-    item->setCheckState(Qt::Unchecked);
+    QStandardItem *item = mMainWnd->newItem(false, "", mDateFormat);
     expand(selection.first());
     parent->appendRow(item);
     edit( m->indexFromItem(item) );

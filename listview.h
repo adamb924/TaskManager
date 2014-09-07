@@ -4,6 +4,7 @@
 #include <QTreeView>
 
 class QStandardItemModel;
+class MainWindow;
 
 class ListView : public QTreeView
 {
@@ -33,6 +34,7 @@ protected:
 private:
     QStandardItemModel * mArchive;
     QString mDateFormat;
+    const MainWindow * mMainWnd;
 };
 
 #endif // LISTVIEW_H

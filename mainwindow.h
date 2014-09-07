@@ -24,6 +24,7 @@ public:
     ~MainWindow();
 
     enum DataType { Label = Qt::UserRole+1, Date, JustChanged };
+    static QStandardItem* newItem(bool checked, const QString & label, const QString & dateFormat, const QDateTime & date = QDateTime() );
 
 public slots:
     void showArchive();
@@ -50,7 +51,6 @@ private:
     void readXmlData();
     void readSettingsData();
     QString dataFilePath() const;
-    QStandardItem* newItem(bool checked, const QString & label, const QDateTime & date = QDateTime() ) const;
 };
 
 #endif // MAINWINDOW_H
