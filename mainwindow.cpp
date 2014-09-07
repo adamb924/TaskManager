@@ -16,8 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    mSettings = new QSettings("TaskManager", "Adam Baker");
-
     connect( &mUrgentImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
     connect( &mUrgentNotImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
     connect( &mNotUrgentImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
@@ -27,11 +25,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->urgentNotImportant->setArchive(&mArchive);
     ui->notUrgentImportant->setArchive(&mArchive);
     ui->notUrgentNotImportant->setArchive(&mArchive);
-
-    addItemsToModel( mSettings->value("urgent_important").toString() , &mUrgentImportant);
-    addItemsToModel( mSettings->value("urgent_notimportant").toString() , &mUrgentNotImportant);
-    addItemsToModel( mSettings->value("noturgent_important").toString() , &mNotUrgentImportant );
-    addItemsToModel( mSettings->value("noturgent_notimportant").toString() , &mNotUrgentNotImportant );
 
     ui->urgentImportant->setModel( &mUrgentImportant );
     ui->urgentNotImportant->setModel( &mUrgentNotImportant );
@@ -64,12 +57,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->notUrgentNotImportant,SIGNAL(save()),this,SLOT(saveData()));
     connect(archiveUi->treeView,SIGNAL(save()),this,SLOT(saveData()));
 
+    if( QFileInfo::exists( dataFilePath() ) )
+    {
+        readXmlData();
+    }
+    else
+    {
+        readSettingsData();
+    }
+
     propagateDateTime();
 }
 
 MainWindow::~MainWindow()
 {
-    delete mSettings;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -106,11 +107,7 @@ void MainWindow::serializeItem(QStandardItem *item, QXmlStreamWriter *stream) co
 {
     stream->writeStartElement("task");
     stream->writeAttribute("completed" , item->checkState() == Qt::Checked ? "yes" : "no" );
-    stream->writeAttribute("label" , item->data(MainWindow::Label).toString() );
-    if( item->data().toDateTime().isValid() )
-    {
-        stream->writeAttribute("date", item->data(MainWindow::Date).toDateTime().toString(Qt::ISODate) );
-    }
+    stream->writeAttribute("label" , item->text() );
     for(int i=0; i<item->rowCount(); i++)
     {
         serializeItem( item->child(i), stream );
@@ -160,16 +157,19 @@ void MainWindow::saveData()
     stream.writeEndDocument();
 }
 
-void MainWindow::readData()
+void MainWindow::readXmlData()
 {
     QFile file(dataFilePath());
     file.open(QFile::ReadOnly);
     QXmlStreamReader stream(&file);
+    QStandardItemModel * currentModel = 0;
+    QStandardItem * currentItem = 0;
 
     while (!stream.atEnd())
     {
         stream.readNext();
         QString name = stream.name().toString();
+        QXmlStreamAttributes attributes = stream.attributes();
         if( stream.tokenType() == QXmlStreamReader::StartElement )
         {
             if( name == "ul-label" )
@@ -193,8 +193,60 @@ void MainWindow::readData()
                 mDateFormat = stream.readElementText();
                 propagateDateTime();
             }
+            else if( name == "urgent-important" )
+            {
+                currentModel = &mUrgentImportant;
+            }
+            else if( name == "urgent-not-important" )
+            {
+                currentModel = &mUrgentNotImportant;
+            }
+            else if( name == "not-urgent-important" )
+            {
+                currentModel = &mNotUrgentImportant;
+            }
+            else if( name == "not-urgent-not-important" )
+            {
+                currentModel = &mNotUrgentNotImportant;
+            }
+            else if( name == "task" )
+            {
+                QStandardItem * item = new QStandardItem( attributes.value("label").toString() );
+                item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
+                item->setCheckState( attributes.value("completed").toString() == "yes" ? Qt::Checked : Qt::Unchecked );
+                if( currentItem == 0 )
+                {
+                    currentModel->appendRow( item );
+                }
+                else
+                {
+                    currentItem->appendRow( item );
+                }
+                currentItem = item;
+            }
+        }
+        else if( stream.tokenType() == QXmlStreamReader::EndElement )
+        {
+            if( name == "task" )
+            {
+                currentItem = 0;
+            }
         }
     }
+}
+
+void MainWindow::readSettingsData()
+{
+    QSettings settings("TaskManager", "Adam Baker");
+    mDateFormat = settings.value("date_format","MM/dd/yyyy").toString();
+    ui->ul->setText( settings.value("ul_label",tr("Urgent & Important")).toString() );
+    ui->ur->setText( settings.value("ur_label",tr("Urgent, Not Important")).toString() );
+    ui->ll->setText( settings.value("ll_label",tr("Important, Not Urgent")).toString() );
+    ui->lr->setText( settings.value("lr_label",tr("Follow up at some point")).toString() );
+    addItemsToModel( settings.value("urgent_important").toString() , &mUrgentImportant);
+    addItemsToModel( settings.value("urgent_notimportant").toString() , &mUrgentNotImportant);
+    addItemsToModel( settings.value("noturgent_important").toString() , &mNotUrgentImportant );
+    addItemsToModel( settings.value("noturgent_notimportant").toString() , &mNotUrgentNotImportant );
 }
 
 QString MainWindow::dataFilePath() const

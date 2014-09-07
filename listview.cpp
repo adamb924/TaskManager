@@ -68,6 +68,7 @@ void ListView::insert()
 {
     QStandardItemModel * m = qobject_cast<QStandardItemModel *>(model());
     QStandardItem *item = new QStandardItem( "" );
+    item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
     m->appendRow(item);
     edit( m->indexFromItem(item) );
 }
@@ -80,6 +81,7 @@ void ListView::insertSubItem()
     QStandardItem *parent = m->itemFromIndex( selection.first() );
 
     QStandardItem *item = new QStandardItem( "" );
+    item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
     expand(selection.first());
     parent->appendRow(item);
     edit( m->indexFromItem(item) );

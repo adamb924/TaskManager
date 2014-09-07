@@ -34,7 +34,6 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
-    QSettings *mSettings;
     QString mDateFormat;
 
     QStandardItemModel mUrgentImportant, mUrgentNotImportant, mNotUrgentImportant, mNotUrgentNotImportant, mArchive;
