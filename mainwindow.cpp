@@ -51,11 +51,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->notUrgentNotImportant,SIGNAL(preferences()),this,SLOT(preferences()));
     connect(archiveUi->treeView,SIGNAL(preferences()),this,SLOT(preferences()));
 
-    connect(ui->urgentImportant,SIGNAL(save()),this,SLOT(saveData()));
-    connect(ui->urgentNotImportant,SIGNAL(save()),this,SLOT(saveData()));
-    connect(ui->notUrgentImportant,SIGNAL(save()),this,SLOT(saveData()));
-    connect(ui->notUrgentNotImportant,SIGNAL(save()),this,SLOT(saveData()));
-    connect(archiveUi->treeView,SIGNAL(save()),this,SLOT(saveData()));
+    connect(ui->urgentImportant,SIGNAL(save()),this,SLOT(saveXmlData()));
+    connect(ui->urgentNotImportant,SIGNAL(save()),this,SLOT(saveXmlData()));
+    connect(ui->notUrgentImportant,SIGNAL(save()),this,SLOT(saveXmlData()));
+    connect(ui->notUrgentNotImportant,SIGNAL(save()),this,SLOT(saveXmlData()));
+    connect(archiveUi->treeView,SIGNAL(save()),this,SLOT(saveXmlData()));
 
     if( QFileInfo::exists( dataFilePath() ) )
     {
@@ -75,7 +75,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    saveData();
+    saveXmlData();
     event->accept();
 }
 
@@ -86,12 +86,7 @@ void MainWindow::addItemsToModel(const QString &string, QStandardItemModel *mode
     {
         QStringList tmp = split.at(i).split(QChar(0xfeff));
         if(tmp.count() < 2) { continue; }
-
-        QStandardItem * item = new QStandardItem( tmp.at(1) );
-        item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
-        item->setCheckState((Qt::CheckState)tmp.at(0).toInt() );
-        item->setData( false , Qt::UserRole + 2 );
-        model->appendRow(item);
+        model->appendRow( newItem( (Qt::CheckState)tmp.at(0).toInt() == Qt::Checked , tmp.at(1) ) );
     }
 }
 
@@ -107,7 +102,11 @@ void MainWindow::serializeItem(QStandardItem *item, QXmlStreamWriter *stream) co
 {
     stream->writeStartElement("task");
     stream->writeAttribute("completed" , item->checkState() == Qt::Checked ? "yes" : "no" );
-    stream->writeAttribute("label" , item->text() );
+    stream->writeAttribute("label" , item->data( MainWindow::Label ).toString() );
+    if( item->data( MainWindow::Date ).toDateTime().isValid() )
+    {
+        stream->writeAttribute("date" , item->data( MainWindow::Date ).toDateTime().toString(Qt::ISODate) );
+    }
     for(int i=0; i<item->rowCount(); i++)
     {
         serializeItem( item->child(i), stream );
@@ -115,7 +114,7 @@ void MainWindow::serializeItem(QStandardItem *item, QXmlStreamWriter *stream) co
     stream->writeEndElement(); // task
 }
 
-void MainWindow::saveData()
+void MainWindow::saveXmlData()
 {
     QFile outFile( dataFilePath() );
     if( !outFile.open(QFile::WriteOnly | QFile::Text) )
@@ -211,9 +210,7 @@ void MainWindow::readXmlData()
             }
             else if( name == "task" )
             {
-                QStandardItem * item = new QStandardItem( attributes.value("label").toString() );
-                item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
-                item->setCheckState( attributes.value("completed").toString() == "yes" ? Qt::Checked : Qt::Unchecked );
+                QStandardItem * item = newItem( attributes.value("completed").toString() == "yes", attributes.value("label").toString(), attributes.hasAttribute("date") ? QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate ) : QDateTime() );
                 if( currentItem == 0 )
                 {
                     currentModel->appendRow( item );
@@ -254,6 +251,35 @@ QString MainWindow::dataFilePath() const
     return QDir::home().absoluteFilePath("TaskManager.xml");
 }
 
+QStandardItem *MainWindow::newItem(bool checked, const QString &label, const QDateTime &date) const
+{
+    QStandardItem * item = new QStandardItem();
+    item->setData( false, MainWindow::JustChanged );
+    item->setData( label, MainWindow::Label );
+    if(date.isValid())
+    {
+        item->setData( date , MainWindow::Date );
+        item->setText( tr("%1 (%2)").arg( label ).arg( date.toString( mDateFormat ) ) );
+    }
+    else
+    {
+        item->setData( 0 , MainWindow::Date );
+        item->setText( label );
+    }
+    item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
+    if( checked )
+    {
+        item->setData( true, MainWindow::JustChanged );
+        item->setCheckState( Qt::Checked );
+    }
+    else
+    {
+        item->setData( false, MainWindow::JustChanged );
+        item->setCheckState( Qt::Unchecked );
+    }
+    return item;
+}
+
 void MainWindow::showArchive()
 {
     mArchiveDock->show();
@@ -291,16 +317,18 @@ void MainWindow::removeAllFromArchive()
 
 void MainWindow::itemChanged(QStandardItem *item)
 {
-    if( item->checkState() == Qt::Checked && item->data(Qt::UserRole+2).toBool() == false )
+    if( item->checkState() == Qt::Checked && item->data(MainWindow::JustChanged).toBool() == false )
     {
-        item->setData( item->text() , Qt::UserRole + 1 );
-        item->setData( true , Qt::UserRole + 2 );
-        item->setText( tr("%1 (%2)").arg( item->data(Qt::UserRole + 1 ).toString() ).arg( QDateTime::currentDateTime().toString( mDateFormat ) ) );
+        item->setData( true , MainWindow::JustChanged );
+        item->setData( item->text() , MainWindow::Label );
+        item->setData( QDateTime::currentDateTime() , MainWindow::Date );
+        item->setText( tr("%1 (%2)").arg( item->data(MainWindow::Label).toString() ).arg( item->data(MainWindow::Date).toDateTime().toString( mDateFormat ) ) );
     }
-    else if( item->checkState() == Qt::Unchecked && item->data(Qt::UserRole+2).toBool() == true )
+    else if( item->checkState() == Qt::Unchecked && item->data(MainWindow::JustChanged).toBool() == true )
     {
-        item->setData( false , Qt::UserRole + 2 );
-        item->setText( item->data(Qt::UserRole + 1 ).toString() );
+        item->setData( false , MainWindow::JustChanged );
+        item->setData( 0 , MainWindow::Date );
+        item->setText( item->data(MainWindow::Label).toString() );
     }
 }
 
