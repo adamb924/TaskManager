@@ -8,6 +8,7 @@
 #include <QStringListModel>
 #include <QtDebug>
 #include <QXmlStreamWriter>
+#include <QStack>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -166,7 +167,7 @@ void MainWindow::readXmlData()
     file.open(QFile::ReadOnly);
     QXmlStreamReader stream(&file);
     QStandardItemModel * currentModel = 0;
-    QStandardItem * currentItem = 0;
+    QStack<QStandardItem*> currentItem;
 
     while (!stream.atEnd())
     {
@@ -215,22 +216,22 @@ void MainWindow::readXmlData()
             else if( name == "task" )
             {
                 QStandardItem * item = newItem( attributes.value("completed").toString() == "yes", attributes.value("label").toString() , mDateFormat, attributes.hasAttribute("date") ? QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate ) : QDateTime() );
-                if( currentItem == 0 )
+                if( currentItem.isEmpty() )
                 {
                     currentModel->appendRow( item );
                 }
                 else
                 {
-                    currentItem->appendRow( item );
+                    currentItem.top()->appendRow( item );
                 }
-                currentItem = item;
+                currentItem.push(item);
             }
         }
         else if( stream.tokenType() == QXmlStreamReader::EndElement )
         {
             if( name == "task" )
             {
-                currentItem = 0;
+                currentItem.pop();
             }
         }
     }
