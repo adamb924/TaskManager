@@ -4,6 +4,7 @@
 #include <QTreeView>
 
 class QStandardItemModel;
+class QStandardItem;
 class MainWindow;
 
 class ListView : public QTreeView
@@ -24,12 +25,16 @@ signals:
 protected slots:
     void insert();
     void insertSubItem();
+    void insertHyperlink();
+    void removeHyperlink();
     void remove();
     void archive();
 
 protected:
     bool isArchive;
     void contextMenuEvent(QContextMenuEvent *e);
+    QStandardItem * getCurrentItem();
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
 private:
     QStandardItemModel * mArchive;

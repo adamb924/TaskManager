@@ -11,10 +11,12 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
+    itemproxymodel.cpp \
         mainwindow.cpp \
     listview.cpp
 
 HEADERS  += mainwindow.h \
+    itemproxymodel.h \
     listview.h
 
 FORMS += \

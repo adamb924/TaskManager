@@ -3,6 +3,8 @@
 #include "ui_archive.h"
 #include "ui_preferencesdialog.h"
 
+#include "itemproxymodel.h"
+
 #include <QtWidgets>
 #include <QAbstractItemModel>
 #include <QStringListModel>
@@ -29,14 +31,29 @@ MainWindow::MainWindow(QWidget *parent)
     ui->notUrgentImportant->setArchive(&mArchive);
     ui->notUrgentNotImportant->setArchive(&mArchive);
 
-    ui->urgentImportant->setModel( &mUrgentImportant );
-    ui->urgentNotImportant->setModel( &mUrgentNotImportant );
-    ui->notUrgentImportant->setModel( &mNotUrgentImportant );
-    ui->notUrgentNotImportant->setModel( &mNotUrgentNotImportant );
+    mUrgentImportantProxy = new ItemProxyModel;
+    mUrgentImportantProxy->setSourceModel( &mUrgentImportant );
+    ui->urgentImportant->setModel( mUrgentImportantProxy );
+
+    mUrgentNotImportantProxy = new ItemProxyModel;
+    mUrgentNotImportantProxy->setSourceModel( &mUrgentNotImportant );
+    ui->urgentNotImportant->setModel( mUrgentNotImportantProxy );
+
+    mNotUrgentImportantProxy = new ItemProxyModel;
+    mNotUrgentImportantProxy->setSourceModel( &mNotUrgentImportant );
+    ui->notUrgentImportant->setModel( mNotUrgentImportantProxy );
+
+    mNotUrgentNotImportantProxy = new ItemProxyModel;
+    mNotUrgentNotImportantProxy->setSourceModel( &mNotUrgentNotImportant );
+    ui->notUrgentNotImportant->setModel( mNotUrgentNotImportantProxy );
 
     QWidget *archiveWidget = new QWidget;
     archiveUi->setupUi(archiveWidget);
-    archiveUi->treeView->setModel(&mArchive);
+
+    mArchiveProxy = new ItemProxyModel;
+    mArchiveProxy->setSourceModel( &mArchive );
+    archiveUi->treeView->setModel(mArchiveProxy);
+
     mArchiveDock = new QDockWidget(tr("Archive"),this,Qt::Drawer);
     mArchiveDock->setWidget(archiveWidget);
     connect(archiveUi->close,SIGNAL(clicked()),mArchiveDock,SLOT(hide()));
@@ -120,6 +137,13 @@ void MainWindow::serializeItem(QStandardItemModel *model, QStandardItem *item, Q
     {
         stream->writeAttribute("label", item->text() );
     }
+
+    QString url = item->data( MainWindow::Url ).toString();
+    if( !url.isEmpty() )
+    {
+        stream->writeAttribute("href" , url );
+    }
+
     for(int i=0; i<item->rowCount(); i++)
     {
         serializeItem( model, item->child(i), stream, view );
@@ -193,6 +217,7 @@ void MainWindow::readXmlData(QString path )
     mUrgentNotImportant.clear();
     mNotUrgentImportant.clear();
     mNotUrgentNotImportant.clear();
+    mArchive.clear();
 
     QXmlStreamReader stream(&file);
     QStandardItemModel * currentModel = nullptr;
@@ -259,6 +284,12 @@ void MainWindow::readXmlData(QString path )
             else if( name == "task" )
             {
                 QStandardItem * item = newItem( attributes.value("completed").toString() == "yes", attributes.value("label").toString() , mDateFormat, attributes.hasAttribute("date") ? QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate ) : QDateTime() );
+
+                if( attributes.hasAttribute("href") )
+                {
+                    item->setData( attributes.value("href").toString(), MainWindow::Url );
+                }
+
                 if( attributes.value("expanded").toString() == "yes" )
                 {
                     currentExpandedList->append( item );

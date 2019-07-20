@@ -11,6 +11,7 @@ class QDockWidget;
 class QLabel;
 class QXmlStreamWriter;
 class QTreeView;
+class ItemProxyModel;
 
 namespace Ui {
     class MainWindow;
@@ -25,7 +26,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    enum DataType { Label = Qt::UserRole+1, Date, JustChanged };
+    enum DataType { Label = Qt::UserRole+1, Date, JustChanged, Url };
     static QStandardItem* newItem(bool checked, const QString & label, const QString & dateFormat, const QDateTime & date = QDateTime() );
 
 protected:
@@ -53,6 +54,8 @@ private:
     QString mDateFormat;
 
     QStandardItemModel mUrgentImportant, mUrgentNotImportant, mNotUrgentImportant, mNotUrgentNotImportant, mArchive;
+
+    ItemProxyModel * mUrgentImportantProxy, * mUrgentNotImportantProxy, * mNotUrgentImportantProxy, * mNotUrgentNotImportantProxy, * mArchiveProxy;
 
     QDockWidget *mArchiveDock;
 
