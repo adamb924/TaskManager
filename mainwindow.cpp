@@ -13,6 +13,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
+      archiveUi(new Ui::Archive),
       mDateFormat("MM/dd/yyyy")
 {
     ui->setupUi(this);
@@ -21,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect( &mUrgentNotImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
     connect( &mNotUrgentImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
     connect( &mNotUrgentNotImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
+    connect( &mArchive, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
 
     ui->urgentImportant->setArchive(&mArchive);
     ui->urgentNotImportant->setArchive(&mArchive);
@@ -33,7 +35,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->notUrgentNotImportant->setModel( &mNotUrgentNotImportant );
 
     QWidget *archiveWidget = new QWidget;
-    Ui::Archive *archiveUi = new Ui::Archive;
     archiveUi->setupUi(archiveWidget);
     archiveUi->treeView->setModel(&mArchive);
     mArchiveDock = new QDockWidget(tr("Archive"),this,Qt::Drawer);
@@ -52,20 +53,19 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->notUrgentNotImportant,SIGNAL(preferences()),this,SLOT(preferences()));
     connect(archiveUi->treeView,SIGNAL(preferences()),this,SLOT(preferences()));
 
-    connect(ui->urgentImportant,SIGNAL(save()),this,SLOT(saveXmlData()));
-    connect(ui->urgentNotImportant,SIGNAL(save()),this,SLOT(saveXmlData()));
-    connect(ui->notUrgentImportant,SIGNAL(save()),this,SLOT(saveXmlData()));
-    connect(ui->notUrgentNotImportant,SIGNAL(save()),this,SLOT(saveXmlData()));
-    connect(archiveUi->treeView,SIGNAL(save()),this,SLOT(saveXmlData()));
+    connect(ui->urgentImportant,SIGNAL(save()),this,SLOT(writeXmlData()));
+    connect(ui->urgentNotImportant,SIGNAL(save()),this,SLOT(writeXmlData()));
+    connect(ui->notUrgentImportant,SIGNAL(save()),this,SLOT(writeXmlData()));
+    connect(ui->notUrgentNotImportant,SIGNAL(save()),this,SLOT(writeXmlData()));
+    connect(archiveUi->treeView,SIGNAL(save()),this,SLOT(writeXmlData()));
 
-    if( QFileInfo::exists( dataFilePath() ) )
-    {
-        readXmlData();
-    }
-    else
-    {
-        readSettingsData();
-    }
+    mDataFolder = QDir::home();
+    mDataFolder.mkdir("TaskManager");
+    mDataFolder.cd("TaskManager");
+    mDataFolder.setNameFilters( QStringList() << "TaskManager*.xml" );
+    mDataFolder.setSorting(QDir::Name | QDir::Reversed);
+
+    readXmlData();
 
     propagateDateTime();
 }
@@ -76,8 +76,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    saveXmlData();
-    event->accept();
+    if( writeXmlData() ) {
+        event->accept();
+    } else {
+        QMessageBox::critical(this, tr("Error saving tasks"), tr("There was an error saving the task list. Don't close the application right now."), QMessageBox::Ok);
+        event->ignore();
+    }
+    cleanUpOldCopies();
 }
 
 void MainWindow::addItemsToModel(const QString &string, QStandardItemModel *model) const
@@ -87,21 +92,24 @@ void MainWindow::addItemsToModel(const QString &string, QStandardItemModel *mode
     {
         QStringList tmp = split.at(i).split(QChar(0xfeff));
         if(tmp.count() < 2) { continue; }
-        model->appendRow( newItem( (Qt::CheckState)tmp.at(0).toInt() == Qt::Checked , tmp.at(1) , mDateFormat ) );
+        model->appendRow( newItem( static_cast<Qt::CheckState>(tmp.at(0).toInt()) == Qt::Checked , tmp.at(1) , mDateFormat ) );
     }
 }
 
-void MainWindow::serializeModel(QStandardItemModel *model, QXmlStreamWriter * stream) const
+void MainWindow::serializeModel(QStandardItemModel *model, QXmlStreamWriter * stream, QTreeView * view) const
 {
     for(int i=0; i<model->rowCount(); i++)
     {
-        serializeItem( model->item(i) , stream );
+        serializeItem( model, model->item(i), stream, view );
     }
 }
 
-void MainWindow::serializeItem(QStandardItem *item, QXmlStreamWriter *stream) const
+void MainWindow::serializeItem(QStandardItemModel *model, QStandardItem *item, QXmlStreamWriter *stream, QTreeView *view) const
 {
     stream->writeStartElement("task");
+
+    stream->writeAttribute("expanded" , view->isExpanded( model->indexFromItem( item ) ) ? "yes" : "no" );
+
     stream->writeAttribute("completed" , item->checkState() == Qt::Checked ? "yes" : "no" );
     if( item->data( MainWindow::Date ).toDateTime().isValid() )
     {
@@ -114,16 +122,20 @@ void MainWindow::serializeItem(QStandardItem *item, QXmlStreamWriter *stream) co
     }
     for(int i=0; i<item->rowCount(); i++)
     {
-        serializeItem( item->child(i), stream );
+        serializeItem( model, item->child(i), stream, view );
     }
     stream->writeEndElement(); // task
 }
 
-void MainWindow::saveXmlData()
+bool MainWindow::writeXmlData(QString path )
 {
-    QFile outFile( dataFilePath() );
+    if( path.isEmpty() )
+    {
+        path = dataFileWritePath();
+    }
+    QFile outFile( path );
     if( !outFile.open(QFile::WriteOnly | QFile::Text) )
-        return;
+        return false;
 
     QXmlStreamWriter stream(&outFile);
     stream.setCodec("UTF-8");
@@ -138,36 +150,59 @@ void MainWindow::saveXmlData()
     stream.writeTextElement("date-format", mDateFormat );
 
     stream.writeStartElement("urgent-important");
-    serializeModel(&mUrgentImportant,&stream);
+    serializeModel(&mUrgentImportant,&stream, ui->urgentImportant);
     stream.writeEndElement(); // urgent-important
 
     stream.writeStartElement("urgent-not-important");
-    serializeModel(&mUrgentNotImportant,&stream);
+    serializeModel(&mUrgentNotImportant,&stream, ui->urgentNotImportant);
     stream.writeEndElement(); // urgent-not-important
 
     stream.writeStartElement("not-urgent-important");
-    serializeModel(&mNotUrgentImportant,&stream);
+    serializeModel(&mNotUrgentImportant,&stream, ui->notUrgentImportant);
     stream.writeEndElement(); // not-urgent-important
 
     stream.writeStartElement("not-urgent-not-important");
-    serializeModel(&mNotUrgentNotImportant,&stream);
+    serializeModel(&mNotUrgentNotImportant,&stream, ui->notUrgentNotImportant);
     stream.writeEndElement(); // not-urgent-not-important
 
     stream.writeStartElement("archive");
-    serializeModel(&mArchive,&stream);
+    serializeModel( &mArchive,&stream, archiveUi->treeView );
     stream.writeEndElement(); // archive
 
     stream.writeEndElement(); // task-manager
     stream.writeEndDocument();
+
+    return true;
 }
 
-void MainWindow::readXmlData()
+void MainWindow::readXmlData(QString path )
 {
-    QFile file(dataFilePath());
-    file.open(QFile::ReadOnly);
+    if( path.isEmpty() )
+    {
+        path = dataFileReadPath();
+    }
+    QFile file( path );
+    if( ! file.open(QFile::ReadOnly) )
+    {
+        QMessageBox::critical(this, tr("Error reading file"), tr("There was an error saving the most recent task list: %1").arg(path), QMessageBox::Ok);
+        return;
+    }
+
+    // clear the models
+    mUrgentImportant.clear();
+    mUrgentNotImportant.clear();
+    mNotUrgentImportant.clear();
+    mNotUrgentNotImportant.clear();
+
     QXmlStreamReader stream(&file);
-    QStandardItemModel * currentModel = 0;
+    QStandardItemModel * currentModel = nullptr;
     QStack<QStandardItem*> currentItem;
+
+    QList<QStandardItem*> * currentExpandedList = nullptr;
+    QList<QStandardItem*> expandedUrgentImportant;
+    QList<QStandardItem*> expandedUrgentNotImportant;
+    QList<QStandardItem*> expandedNotUrgentImportant;
+    QList<QStandardItem*> expandedNotUrgentNotImportant;
 
     while (!stream.atEnd())
     {
@@ -200,22 +235,34 @@ void MainWindow::readXmlData()
             else if( name == "urgent-important" )
             {
                 currentModel = &mUrgentImportant;
+                currentExpandedList = &expandedUrgentImportant;
             }
             else if( name == "urgent-not-important" )
             {
                 currentModel = &mUrgentNotImportant;
+                currentExpandedList = &expandedUrgentNotImportant;
             }
             else if( name == "not-urgent-important" )
             {
                 currentModel = &mNotUrgentImportant;
+                currentExpandedList = &expandedNotUrgentImportant;
             }
             else if( name == "not-urgent-not-important" )
             {
                 currentModel = &mNotUrgentNotImportant;
+                currentExpandedList = &expandedNotUrgentNotImportant;
+            }
+            else if( name == "archive" )
+            {
+                currentModel = &mArchive;
             }
             else if( name == "task" )
             {
                 QStandardItem * item = newItem( attributes.value("completed").toString() == "yes", attributes.value("label").toString() , mDateFormat, attributes.hasAttribute("date") ? QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate ) : QDateTime() );
+                if( attributes.value("expanded").toString() == "yes" )
+                {
+                    currentExpandedList->append( item );
+                }
                 if( currentItem.isEmpty() )
                 {
                     currentModel->appendRow( item );
@@ -235,25 +282,53 @@ void MainWindow::readXmlData()
             }
         }
     }
+
+    foreach( QStandardItem * item, expandedUrgentImportant )
+    {
+        ui->urgentImportant->setExpanded( mUrgentImportant.indexFromItem( item ), true );
+    }
+
+    foreach( QStandardItem * item, expandedNotUrgentImportant )
+    {
+        ui->notUrgentImportant->setExpanded( mNotUrgentImportant.indexFromItem( item ), true );
+    }
+
+    foreach( QStandardItem * item, expandedUrgentNotImportant )
+    {
+        ui->urgentNotImportant->setExpanded( mUrgentNotImportant.indexFromItem( item ), true );
+    }
+
+    foreach( QStandardItem * item, expandedNotUrgentNotImportant )
+    {
+        ui->notUrgentNotImportant->setExpanded( mNotUrgentNotImportant.indexFromItem( item ), true );
+    }
 }
 
-void MainWindow::readSettingsData()
+QString MainWindow::dataFileReadPath() const
 {
-    QSettings settings("TaskManager", "Adam Baker");
-    mDateFormat = settings.value("date_format","MM/dd/yyyy").toString();
-    ui->ul->setText( settings.value("ul_label",tr("Urgent & Important")).toString() );
-    ui->ur->setText( settings.value("ur_label",tr("Urgent, Not Important")).toString() );
-    ui->ll->setText( settings.value("ll_label",tr("Important, Not Urgent")).toString() );
-    ui->lr->setText( settings.value("lr_label",tr("Follow up at some point")).toString() );
-    addItemsToModel( settings.value("urgent_important").toString() , &mUrgentImportant);
-    addItemsToModel( settings.value("urgent_notimportant").toString() , &mUrgentNotImportant);
-    addItemsToModel( settings.value("noturgent_important").toString() , &mNotUrgentImportant );
-    addItemsToModel( settings.value("noturgent_notimportant").toString() , &mNotUrgentNotImportant );
+    QStringList files = mDataFolder.entryList();
+    if( files.size() > 0 )
+    {
+        return mDataFolder.absoluteFilePath( files.first() );
+    }
+    else
+    {
+        return "";
+    }
 }
 
-QString MainWindow::dataFilePath() const
+QString MainWindow::dataFileWritePath() const
 {
-    return QDir::home().absoluteFilePath("TaskManager.xml");
+    return QDir::home().absoluteFilePath( QString("TaskManager/TaskManager-%1.xml").arg(QDateTime::currentDateTime().toString(Qt::ISODate).replace(":","-"))  );
+}
+
+void MainWindow::cleanUpOldCopies()
+{
+    QStringList files = mDataFolder.entryList();
+    for(int i=20; i < files.size(); i++)
+    {
+        mDataFolder.remove( files.at(i) );
+    }
 }
 
 QStandardItem *MainWindow::newItem(bool checked, const QString &label, const QString & dateFormat, const QDateTime &date)
@@ -283,6 +358,16 @@ QStandardItem *MainWindow::newItem(bool checked, const QString &label, const QSt
         item->setCheckState( Qt::Unchecked );
     }
     return item;
+}
+
+void MainWindow::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu *menu = new QMenu(this);
+    menu->addAction(tr("Open..."), this, SLOT(openFile()));
+    menu->addAction(tr("Save as..."), this, SLOT(saveAs()));
+    menu->addAction(tr("Open the data directory..."), this, SLOT(openDataDirectory()));
+
+    menu->exec(event->globalPos());
 }
 
 void MainWindow::showArchive()
@@ -334,6 +419,29 @@ void MainWindow::itemChanged(QStandardItem *item)
         item->setData( false , MainWindow::JustChanged );
         item->setData( 0 , MainWindow::Date );
         item->setText( item->data(MainWindow::Label).toString() );
+    }
+}
+
+void MainWindow::openFile()
+{
+    QString path = QFileDialog::getOpenFileName(this, tr("Select file..."), mDataFolder.absolutePath(), tr("XML Files (*.xml)") );
+    if( !path.isNull() )
+    {
+        readXmlData(path);
+    }
+}
+
+void MainWindow::openDataDirectory()
+{
+    QDesktopServices::openUrl( QUrl::fromLocalFile( mDataFolder.absolutePath() ) );
+}
+
+void MainWindow::saveAs()
+{
+    QString path = QFileDialog::getSaveFileName(this, tr("Select destination..."), mDataFolder.absolutePath(), tr("XML Files (*.xml)") );
+    if( !path.isNull() )
+    {
+        writeXmlData(path);
     }
 }
 

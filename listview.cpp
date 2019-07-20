@@ -51,7 +51,7 @@ void ListView::archive()
     if( selection.isEmpty() ) { return; }
     QStandardItem *item = m->itemFromIndex( selection.first() );
 
-    item->setData( QDate::currentDate() );
+    item->setData( QDate::currentDate() , MainWindow::Date );
 
     if( selection.first().parent() != QModelIndex() )
     {

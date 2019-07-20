@@ -4,15 +4,17 @@
 #include <QMainWindow>
 #include <QStandardItemModel>
 #include <QDateTime>
+#include <QDir>
 
-class QSettings;
 class QDialog;
 class QDockWidget;
 class QLabel;
 class QXmlStreamWriter;
+class QTreeView;
 
 namespace Ui {
     class MainWindow;
+    class Archive;
 }
 
 class MainWindow : public QMainWindow
@@ -20,22 +22,34 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
     enum DataType { Label = Qt::UserRole+1, Date, JustChanged };
     static QStandardItem* newItem(bool checked, const QString & label, const QString & dateFormat, const QDateTime & date = QDateTime() );
 
+protected:
+    void contextMenuEvent(QContextMenuEvent *event);
+
 public slots:
     void showArchive();
     void preferences();
-    void saveXmlData();
+    bool writeXmlData(QString path = QString());
     void removeAllFromArchive();
 
     void itemChanged(QStandardItem * item);
 
+private slots:
+    void openFile();
+    void openDataDirectory();
+    void saveAs();
+
 private:
     Ui::MainWindow *ui;
+    Ui::Archive *archiveUi;
+
+    QDir mDataFolder;
+
     QString mDateFormat;
 
     QStandardItemModel mUrgentImportant, mUrgentNotImportant, mNotUrgentImportant, mNotUrgentNotImportant, mArchive;
@@ -45,12 +59,13 @@ private:
 
     void closeEvent(QCloseEvent *event);
     void addItemsToModel(const QString & string, QStandardItemModel *model) const;
-    void serializeModel(QStandardItemModel * model, QXmlStreamWriter *stream) const;
-    void serializeItem(QStandardItem * item, QXmlStreamWriter *stream) const;
+    void serializeModel(QStandardItemModel * model, QXmlStreamWriter *stream, QTreeView *view) const;
+    void serializeItem(QStandardItemModel *model, QStandardItem * item, QXmlStreamWriter *stream, QTreeView *view) const;
     void propagateDateTime();
-    void readXmlData();
-    void readSettingsData();
-    QString dataFilePath() const;
+    void readXmlData(QString path = QString());
+    QString dataFileReadPath() const;
+    QString dataFileWritePath() const;
+    void cleanUpOldCopies();
 };
 
 #endif // MAINWINDOW_H

@@ -11,7 +11,7 @@ class ListView : public QTreeView
     Q_OBJECT
 
 public:
-    explicit ListView(QWidget *parent = 0);
+    explicit ListView(QWidget *parent = nullptr);
 
     void setArchive(QStandardItemModel *archive);
     void setDateTimeFormat(const QString & date);

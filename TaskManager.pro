@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets xml
+QT       += core gui widgets sql
 
 TARGET = TaskManager
 TEMPLATE = app
