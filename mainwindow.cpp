@@ -87,14 +87,12 @@ void MainWindow::serializeItem(List *list, QStandardItem *item, QXmlStreamWriter
     stream->writeAttribute("expanded" , list->view->isExpanded( list->proxy->mapFromSource( list->model->indexFromItem( item ) ) ) ? "yes" : "no" );
 
     stream->writeAttribute("completed" , item->checkState() == Qt::Checked ? "yes" : "no" );
+
+    stream->writeAttribute("label" , item->data( MainWindow::Label ).toString() );
+
     if( item->data( MainWindow::Date ).toDateTime().isValid() )
     {
-        stream->writeAttribute("label" , item->data( MainWindow::Label ).toString() );
         stream->writeAttribute("date" , item->data( MainWindow::Date ).toDateTime().toString(Qt::ISODate) );
-    }
-    else
-    {
-        stream->writeAttribute("label", item->text() );
     }
 
     QString url = item->data( MainWindow::Url ).toString();
