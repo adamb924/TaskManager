@@ -56,12 +56,9 @@ private:
 
     QString mDateFormat;
 
-    ItemProxyModel * mUrgentImportantProxy, * mUrgentNotImportantProxy, * mNotUrgentImportantProxy, * mNotUrgentNotImportantProxy, * mArchiveProxy;
-
     QDockWidget *mArchiveDock;
 
     QHash<MainWindow::ListType, List*> mLists;
-
 
     void closeEvent(QCloseEvent *event);
     void serializeModel(List * list, QXmlStreamWriter *stream) const;
