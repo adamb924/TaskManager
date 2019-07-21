@@ -113,19 +113,19 @@ void MainWindow::addItemsToModel(const QString &string, QStandardItemModel *mode
     }
 }
 
-void MainWindow::serializeModel(QStandardItemModel *model, QXmlStreamWriter * stream, QTreeView * view) const
+void MainWindow::serializeModel(QStandardItemModel *model, QXmlStreamWriter * stream, QTreeView * view, ItemProxyModel *proxy) const
 {
     for(int i=0; i<model->rowCount(); i++)
     {
-        serializeItem( model, model->item(i), stream, view );
+        serializeItem( model, model->item(i), stream, view, proxy );
     }
 }
 
-void MainWindow::serializeItem(QStandardItemModel *model, QStandardItem *item, QXmlStreamWriter *stream, QTreeView *view) const
+void MainWindow::serializeItem(QStandardItemModel *model, QStandardItem *item, QXmlStreamWriter *stream, QTreeView *view, ItemProxyModel *proxy) const
 {
     stream->writeStartElement("task");
 
-    stream->writeAttribute("expanded" , view->isExpanded( model->indexFromItem( item ) ) ? "yes" : "no" );
+    stream->writeAttribute("expanded" , view->isExpanded( proxy->mapFromSource( model->indexFromItem( item ) ) ) ? "yes" : "no" );
 
     stream->writeAttribute("completed" , item->checkState() == Qt::Checked ? "yes" : "no" );
     if( item->data( MainWindow::Date ).toDateTime().isValid() )
@@ -146,7 +146,7 @@ void MainWindow::serializeItem(QStandardItemModel *model, QStandardItem *item, Q
 
     for(int i=0; i<item->rowCount(); i++)
     {
-        serializeItem( model, item->child(i), stream, view );
+        serializeItem( model, item->child(i), stream, view, proxy );
     }
     stream->writeEndElement(); // task
 }
@@ -174,23 +174,23 @@ bool MainWindow::writeXmlData(QString path )
     stream.writeTextElement("date-format", mDateFormat );
 
     stream.writeStartElement("urgent-important");
-    serializeModel(&mUrgentImportant,&stream, ui->urgentImportant);
+    serializeModel(&mUrgentImportant,&stream, ui->urgentImportant, mUrgentImportantProxy);
     stream.writeEndElement(); // urgent-important
 
     stream.writeStartElement("urgent-not-important");
-    serializeModel(&mUrgentNotImportant,&stream, ui->urgentNotImportant);
+    serializeModel(&mUrgentNotImportant,&stream, ui->urgentNotImportant, mUrgentNotImportantProxy);
     stream.writeEndElement(); // urgent-not-important
 
     stream.writeStartElement("not-urgent-important");
-    serializeModel(&mNotUrgentImportant,&stream, ui->notUrgentImportant);
+    serializeModel(&mNotUrgentImportant,&stream, ui->notUrgentImportant, mNotUrgentImportantProxy);
     stream.writeEndElement(); // not-urgent-important
 
     stream.writeStartElement("not-urgent-not-important");
-    serializeModel(&mNotUrgentNotImportant,&stream, ui->notUrgentNotImportant);
+    serializeModel(&mNotUrgentNotImportant,&stream, ui->notUrgentNotImportant, mNotUrgentNotImportantProxy);
     stream.writeEndElement(); // not-urgent-not-important
 
     stream.writeStartElement("archive");
-    serializeModel( &mArchive,&stream, archiveUi->treeView );
+    serializeModel( &mArchive,&stream, archiveUi->treeView, mArchiveProxy );
     stream.writeEndElement(); // archive
 
     stream.writeEndElement(); // task-manager
@@ -316,22 +316,22 @@ void MainWindow::readXmlData(QString path )
 
     foreach( QStandardItem * item, expandedUrgentImportant )
     {
-        ui->urgentImportant->setExpanded( mUrgentImportant.indexFromItem( item ), true );
+        ui->urgentImportant->setExpanded( mUrgentImportantProxy->mapFromSource( mUrgentImportant.indexFromItem( item ) ), true );
     }
 
     foreach( QStandardItem * item, expandedNotUrgentImportant )
     {
-        ui->notUrgentImportant->setExpanded( mNotUrgentImportant.indexFromItem( item ), true );
+        ui->notUrgentImportant->setExpanded( mNotUrgentImportantProxy->mapFromSource( mNotUrgentImportant.indexFromItem( item ) ), true );
     }
 
     foreach( QStandardItem * item, expandedUrgentNotImportant )
     {
-        ui->urgentNotImportant->setExpanded( mUrgentNotImportant.indexFromItem( item ), true );
+        ui->urgentNotImportant->setExpanded( mUrgentNotImportantProxy->mapFromSource( mUrgentNotImportant.indexFromItem( item ) ), true );
     }
 
     foreach( QStandardItem * item, expandedNotUrgentNotImportant )
     {
-        ui->notUrgentNotImportant->setExpanded( mNotUrgentNotImportant.indexFromItem( item ), true );
+        ui->notUrgentNotImportant->setExpanded( mNotUrgentNotImportantProxy->mapFromSource( mNotUrgentNotImportant.indexFromItem( item ) ), true );
     }
 }
 

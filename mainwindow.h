@@ -62,8 +62,8 @@ private:
 
     void closeEvent(QCloseEvent *event);
     void addItemsToModel(const QString & string, QStandardItemModel *model) const;
-    void serializeModel(QStandardItemModel * model, QXmlStreamWriter *stream, QTreeView *view) const;
-    void serializeItem(QStandardItemModel *model, QStandardItem * item, QXmlStreamWriter *stream, QTreeView *view) const;
+    void serializeModel(QStandardItemModel * model, QXmlStreamWriter *stream, QTreeView *view, ItemProxyModel *proxy) const;
+    void serializeItem(QStandardItemModel *model, QStandardItem * item, QXmlStreamWriter *stream, QTreeView *view, ItemProxyModel *proxy) const;
     void propagateDateTime();
     void readXmlData(QString path = QString());
     QString dataFileReadPath() const;
