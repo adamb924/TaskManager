@@ -11,7 +11,10 @@ public:
     ItemProxyModel();
 
     QVariant data(const QModelIndex &index, int role) const;
+    void setDateTimeFormat(const QString & date);
 
+private:
+    QString mDateFormat;
 };
 
 #endif // ITEMPROXYMODEL_H

@@ -28,8 +28,9 @@ public:
     ~MainWindow();
 
     enum ListType { UrgentImportant, NotUrgentImportant, UrgentNotImportant, NotUrgentNotImportant, Archive };
-    enum DataType { Label = Qt::UserRole+1, Date, JustChanged, Url };
-    static QStandardItem* newItem(bool checked, const QString & label, const QString & dateFormat, const QDateTime & date = QDateTime(), const QString & url = QString() );
+    enum DataType { Label = Qt::UserRole+1, Date, JustChanged, Url, Completed };
+    static QStandardItem* newItem(bool checked, const QString & label, const QDateTime & date = QDateTime(), const QString & url = QString() );
+
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event);
@@ -45,6 +46,7 @@ private slots:
     void openDataDirectory();
     void saveAs();
     void archiveItem(QStandardItem *item);
+    void itemChanged(QStandardItem *item);
 
 private:
     Ui::MainWindow *ui;

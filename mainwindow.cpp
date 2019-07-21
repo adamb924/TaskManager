@@ -24,38 +24,26 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *archiveWidget = new QWidget;
     archiveUi->setupUi(archiveWidget);
 
+    mArchiveDock = new QDockWidget(tr("Archive"),this,Qt::Drawer);
+    mArchiveDock->setWidget(archiveWidget);
+    connect(archiveUi->close,SIGNAL(clicked()),mArchiveDock,SLOT(hide()));
+    connect(archiveUi->removeAll,SIGNAL(clicked()),this,SLOT(removeAllFromArchive()));
+
     mLists[ MainWindow::UrgentImportant ] = new List( ui->urgentImportant,  "urgent-important" );
     mLists[ MainWindow::NotUrgentImportant ] = new List( ui->notUrgentImportant,  "not-urgent-important" );
     mLists[ MainWindow::UrgentNotImportant ] = new List( ui->urgentNotImportant,  "urgent-not-important" );
     mLists[ MainWindow::NotUrgentNotImportant ] = new List( ui->notUrgentNotImportant,  "not-urgent-not-important" );
     mLists[ MainWindow::Archive ] = new List( archiveUi->treeView,  "archive" );
 
-    mArchiveDock = new QDockWidget(tr("Archive"),this,Qt::Drawer);
-    mArchiveDock->setWidget(archiveWidget);
-    connect(archiveUi->close,SIGNAL(clicked()),mArchiveDock,SLOT(hide()));
-    connect(archiveUi->removeAll,SIGNAL(clicked()),this,SLOT(removeAllFromArchive()));
-
-    connect(ui->urgentImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
-    connect(ui->urgentNotImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
-    connect(ui->notUrgentImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
-    connect(ui->notUrgentNotImportant,SIGNAL(showArchive()),this,SLOT(showArchive()));
-
-    connect(ui->urgentImportant,SIGNAL(preferences()),this,SLOT(preferences()));
-    connect(ui->urgentNotImportant,SIGNAL(preferences()),this,SLOT(preferences()));
-    connect(ui->notUrgentImportant,SIGNAL(preferences()),this,SLOT(preferences()));
-    connect(ui->notUrgentNotImportant,SIGNAL(preferences()),this,SLOT(preferences()));
-    connect(archiveUi->treeView,SIGNAL(preferences()),this,SLOT(preferences()));
-
-    connect(ui->urgentImportant,SIGNAL(save()),this,SLOT(writeXmlData()));
-    connect(ui->urgentNotImportant,SIGNAL(save()),this,SLOT(writeXmlData()));
-    connect(ui->notUrgentImportant,SIGNAL(save()),this,SLOT(writeXmlData()));
-    connect(ui->notUrgentNotImportant,SIGNAL(save()),this,SLOT(writeXmlData()));
-    connect(archiveUi->treeView,SIGNAL(save()),this,SLOT(writeXmlData()));
-
-    connect(ui->urgentImportant,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
-    connect(ui->urgentNotImportant,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
-    connect(ui->notUrgentImportant,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
-    connect(ui->notUrgentNotImportant,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
+    foreach( List * l, mLists )
+    {
+        l->proxy->setDateTimeFormat( mDateFormat );
+        connect(l->model,SIGNAL( itemChanged(QStandardItem*) ),this,SLOT(itemChanged(QStandardItem*)));
+        connect(l->view,SIGNAL(showArchive()),this,SLOT(showArchive()));
+        connect(l->view,SIGNAL(preferences()),this,SLOT(preferences()));
+        connect(l->view,SIGNAL(save()),this,SLOT(writeXmlData()));
+        connect(l->view,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
+    }
 
     mDataFolder = QDir::home();
     mDataFolder.mkdir("TaskManager");
@@ -232,7 +220,7 @@ void MainWindow::readXmlData(QString path )
             }
             else if( name == "task" )
             {
-                QStandardItem * item = newItem( attributes.value("completed").toString() == "yes", attributes.value("label").toString() , mDateFormat, attributes.hasAttribute("date") ? QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate ) : QDateTime() );
+                QStandardItem * item = newItem( attributes.value("completed").toString() == "yes", attributes.value("label").toString(), attributes.hasAttribute("date") ? QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate ) : QDateTime() );
 
                 if( attributes.hasAttribute("href") )
                 {
@@ -300,24 +288,23 @@ void MainWindow::cleanUpOldCopies()
     }
 }
 
-QStandardItem *MainWindow::newItem(bool checked, const QString &label, const QString & dateFormat, const QDateTime &date, const QString &url)
+QStandardItem *MainWindow::newItem(bool completed, const QString &label, const QDateTime &date, const QString &url)
 {
     QStandardItem * item = new QStandardItem();
     item->setData( false, MainWindow::JustChanged );
     item->setData( label, MainWindow::Label );
+    item->setData( completed , MainWindow::Completed );
     item->setData( url, MainWindow::Url );
     if(date.isValid())
     {
         item->setData( date , MainWindow::Date );
-        item->setText( tr("%1 (%2)").arg( label ).arg( date.toString( dateFormat ) ) );
     }
     else
     {
         item->setData( 0 , MainWindow::Date );
-        item->setText( label );
     }
     item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
-    if( checked )
+    if( completed )
     {
         item->setData( true, MainWindow::JustChanged );
         item->setCheckState( Qt::Checked );
@@ -407,6 +394,30 @@ void MainWindow::propagateDateTime()
 {
     foreach( List * l, mLists )
     {
-        l->view->setDateTimeFormat(mDateFormat);
+        l->proxy->setDateTimeFormat( mDateFormat );
+    }
+}
+
+void MainWindow::itemChanged(QStandardItem *item)
+{
+    bool justChanged = item->data(MainWindow::JustChanged).toBool();
+    bool checked = item->checkState() == Qt::Checked;
+    if( !justChanged && checked )
+    {
+        item->setData( true , MainWindow::JustChanged );
+        item->setData( true , MainWindow::Completed );
+        item->setData( QDateTime::currentDateTime() , MainWindow::Date );
+        item->setData( item->text() , MainWindow::Label );
+    }
+    else if ( justChanged && !checked )
+    {
+        item->setData( false , MainWindow::JustChanged );
+        item->setData( false , MainWindow::Completed );
+        item->setData( 0, MainWindow::Date );
+        item->setData( item->text() , MainWindow::Label );
+    }
+    else
+    {
+        item->setData( item->text() , MainWindow::Label );
     }
 }

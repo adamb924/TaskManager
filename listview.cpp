@@ -19,11 +19,6 @@ ListView::ListView(QWidget *parent) : QTreeView(parent)
 {
 }
 
-void ListView::setDateTimeFormat(const QString &date)
-{
-    mDateFormat = date;
-}
-
 void ListView::contextMenuEvent(QContextMenuEvent *e)
 {
     QMenu menu;
@@ -109,7 +104,7 @@ void ListView::insert()
 {
     ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
     QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
-    QStandardItem *item = MainWindow::newItem(false, "", mDateFormat);
+    QStandardItem *item = MainWindow::newItem(false, "");
     m->appendRow( item );
     edit( ipm->mapFromSource( m->indexFromItem(item) ) );
 }
@@ -121,7 +116,7 @@ void ListView::insertLink()
     LinkEditDialog dlg;
     if( dlg.exec() == QDialog::Accepted )
     {
-        QStandardItem *item = MainWindow::newItem(false, dlg.label(), mDateFormat, QDateTime(), dlg.url());
+        QStandardItem *item = MainWindow::newItem(false, dlg.label(), QDateTime(), dlg.url());
         m->appendRow( item );
     }
 }
@@ -134,7 +129,7 @@ void ListView::insertSubItem()
     if( selection.isEmpty() ) { return; }
     QStandardItem *parent = m->itemFromIndex( ipm->mapToSource( selection.first() ) );
 
-    QStandardItem *item = MainWindow::newItem(false, "", mDateFormat);
+    QStandardItem *item = MainWindow::newItem(false, "");
     expand(selection.first());
     parent->appendRow(item);
     edit( ipm->mapFromSource( m->indexFromItem(item) ) );
@@ -151,7 +146,7 @@ void ListView::insertSubItemLink()
     LinkEditDialog dlg;
     if( dlg.exec() == QDialog::Accepted )
     {
-        QStandardItem *item = MainWindow::newItem(false, dlg.label(), mDateFormat, QDateTime(), dlg.url());
+        QStandardItem *item = MainWindow::newItem(false, dlg.label(), QDateTime(), dlg.url());
         expand(selection.first());
         parent->appendRow(item);
     }
@@ -162,7 +157,7 @@ void ListView::insertHyperlink()
     QStandardItem *item = getCurrentItem();
     if( item != nullptr )
     {
-        LinkEditDialog dlg( item->text(), item->data(MainWindow::Url).toString() );
+        LinkEditDialog dlg( item->data(MainWindow::Label).toString(), item->data(MainWindow::Url).toString() );
         if( dlg.exec() == QDialog::Accepted )
         {
             item->setText( dlg.label() );

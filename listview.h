@@ -13,8 +13,6 @@ class ListView : public QTreeView
 public:
     explicit ListView(QWidget *parent = nullptr);
 
-    void setDateTimeFormat(const QString & date);
-
 signals:
     void showArchive();
     void preferences();
@@ -35,9 +33,6 @@ protected:
     void contextMenuEvent(QContextMenuEvent *e);
     QStandardItem * getCurrentItem();
     void mouseDoubleClickEvent(QMouseEvent *event);
-
-private:
-    QString mDateFormat;
 };
 
 #endif // LISTVIEW_H
