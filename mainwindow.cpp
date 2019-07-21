@@ -290,6 +290,7 @@ QStandardItem *MainWindow::newItem(bool completed, const QString &label, const Q
 {
     QStandardItem * item = new QStandardItem();
     item->setData( false, MainWindow::JustChanged );
+    item->setText( label );
     item->setData( label, MainWindow::Label );
     item->setData( completed , MainWindow::Completed );
     item->setData( url, MainWindow::Url );
