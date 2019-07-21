@@ -40,8 +40,6 @@ public slots:
     bool writeXmlData(QString path = QString());
     void removeAllFromArchive();
 
-    void itemChanged(QStandardItem * item);
-
 private slots:
     void openFile();
     void openDataDirectory();
@@ -64,7 +62,6 @@ private:
 
 
     void closeEvent(QCloseEvent *event);
-    void addItemsToModel(const QString & string, QStandardItemModel *model) const;
     void serializeModel(List * list, QXmlStreamWriter *stream) const;
     void serializeItem(List * list, QStandardItem * item, QXmlStreamWriter *stream) const;
     void propagateDateTime();

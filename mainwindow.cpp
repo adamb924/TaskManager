@@ -84,17 +84,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     cleanUpOldCopies();
 }
 
-void MainWindow::addItemsToModel(const QString &string, QStandardItemModel *model) const
-{
-    QStringList split = string.split("\n");
-    for(int i=0; i<split.count(); i++)
-    {
-        QStringList tmp = split.at(i).split(QChar(0xfeff));
-        if(tmp.count() < 2) { continue; }
-        model->appendRow( newItem( static_cast<Qt::CheckState>(tmp.at(0).toInt()) == Qt::Checked , tmp.at(1) , mDateFormat ) );
-    }
-}
-
 void MainWindow::serializeModel(List * list, QXmlStreamWriter *stream) const
 {
     for(int i=0; i<list->model->rowCount(); i++)
@@ -383,23 +372,6 @@ void MainWindow::removeAllFromArchive()
     if( QMessageBox::Yes == QMessageBox::question(this, tr("Task Manager"), tr("Are you sure you want to clear the archive?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No ) )
     {
         mLists[MainWindow::Archive]->model->clear();
-    }
-}
-
-void MainWindow::itemChanged(QStandardItem *item)
-{
-    if( item->checkState() == Qt::Checked && item->data(MainWindow::JustChanged).toBool() == false )
-    {
-        item->setData( true , MainWindow::JustChanged );
-        item->setData( item->text() , MainWindow::Label );
-        item->setData( QDateTime::currentDateTime() , MainWindow::Date );
-        item->setText( tr("%1 (%2)").arg( item->data(MainWindow::Label).toString() ).arg( item->data(MainWindow::Date).toDateTime().toString( mDateFormat ) ) );
-    }
-    else if( item->checkState() == Qt::Unchecked && item->data(MainWindow::JustChanged).toBool() == true )
-    {
-        item->setData( false , MainWindow::JustChanged );
-        item->setData( 0 , MainWindow::Date );
-        item->setText( item->data(MainWindow::Label).toString() );
     }
 }
 

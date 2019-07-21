@@ -17,6 +17,8 @@ public:
 
     ~List();
 
+    List& operator=(const List& other);
+
     QModelIndex indexFromItem(QStandardItem * item);
 
 private:

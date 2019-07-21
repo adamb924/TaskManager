@@ -2,3 +2,4 @@
 *.user
 *.2-pre1
 *.8-pre1
+taskmanager-cppcheck-build-dir/

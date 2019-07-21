@@ -13,7 +13,6 @@ class ListView : public QTreeView
 public:
     explicit ListView(QWidget *parent = nullptr);
 
-    void setArchive(QStandardItemModel *archive);
     void setDateTimeFormat(const QString & date);
 
 signals:
@@ -33,13 +32,11 @@ protected slots:
     void archive();
 
 protected:
-    bool isArchive;
     void contextMenuEvent(QContextMenuEvent *e);
     QStandardItem * getCurrentItem();
     void mouseDoubleClickEvent(QMouseEvent *event);
 
 private:
-    QStandardItemModel * mArchive;
     QString mDateFormat;
 };
 

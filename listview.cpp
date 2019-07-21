@@ -19,11 +19,6 @@ ListView::ListView(QWidget *parent) : QTreeView(parent)
 {
 }
 
-void ListView::setArchive(QStandardItemModel *archive)
-{
-    mArchive = archive;
-}
-
 void ListView::setDateTimeFormat(const QString &date)
 {
     mDateFormat = date;

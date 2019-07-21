@@ -12,17 +12,23 @@ List::List(ListView *v, const QString &xml) : model(new QStandardItemModel), pro
     view->setModel( proxy );
 }
 
-List::List(const List &other)
+List::List(const List &other) : model( other.model ), proxy( other.proxy ), view( other.view ), xmlString( other.xmlString )
 {
-    model = other.model;
-    proxy = other.proxy;
-    view = other.view;
 }
 
 List::~List()
 {
     delete model;
     delete proxy;
+}
+
+List &List::operator=(const List &other)
+{
+    model = other.model;
+    proxy = other.proxy;
+    view = other.view;
+    xmlString = other.xmlString;
+    return *this;
 }
 
 QModelIndex List::indexFromItem(QStandardItem *item)
