@@ -12,6 +12,7 @@ class QLabel;
 class QXmlStreamWriter;
 class QTreeView;
 class ItemProxyModel;
+class List;
 
 namespace Ui {
     class MainWindow;
@@ -26,6 +27,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    enum ListType { UrgentImportant, NotUrgentImportant, UrgentNotImportant, NotUrgentNotImportant, Archive };
     enum DataType { Label = Qt::UserRole+1, Date, JustChanged, Url };
     static QStandardItem* newItem(bool checked, const QString & label, const QString & dateFormat, const QDateTime & date = QDateTime(), const QString & url = QString() );
 
@@ -44,6 +46,7 @@ private slots:
     void openFile();
     void openDataDirectory();
     void saveAs();
+    void archiveItem(QStandardItem *item);
 
 private:
     Ui::MainWindow *ui;
@@ -53,17 +56,17 @@ private:
 
     QString mDateFormat;
 
-    QStandardItemModel mUrgentImportant, mUrgentNotImportant, mNotUrgentImportant, mNotUrgentNotImportant, mArchive;
-
     ItemProxyModel * mUrgentImportantProxy, * mUrgentNotImportantProxy, * mNotUrgentImportantProxy, * mNotUrgentNotImportantProxy, * mArchiveProxy;
 
     QDockWidget *mArchiveDock;
 
+    QHash<MainWindow::ListType, List*> mLists;
+
 
     void closeEvent(QCloseEvent *event);
     void addItemsToModel(const QString & string, QStandardItemModel *model) const;
-    void serializeModel(QStandardItemModel * model, QXmlStreamWriter *stream, QTreeView *view, ItemProxyModel *proxy) const;
-    void serializeItem(QStandardItemModel *model, QStandardItem * item, QXmlStreamWriter *stream, QTreeView *view, ItemProxyModel *proxy) const;
+    void serializeModel(List * list, QXmlStreamWriter *stream) const;
+    void serializeItem(List * list, QStandardItem * item, QXmlStreamWriter *stream) const;
     void propagateDateTime();
     void readXmlData(QString path = QString());
     QString dataFileReadPath() const;

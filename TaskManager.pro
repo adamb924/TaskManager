@@ -13,12 +13,14 @@ TEMPLATE = app
 SOURCES += main.cpp\
     itemproxymodel.cpp \
     linkeditdialog.cpp \
+    list.cpp \
         mainwindow.cpp \
     listview.cpp
 
 HEADERS  += mainwindow.h \
     itemproxymodel.h \
     linkeditdialog.h \
+    list.h \
     listview.h
 
 FORMS += \

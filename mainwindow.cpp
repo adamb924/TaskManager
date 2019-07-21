@@ -4,6 +4,7 @@
 #include "ui_preferencesdialog.h"
 
 #include "itemproxymodel.h"
+#include "list.h"
 
 #include <QtWidgets>
 #include <QAbstractItemModel>
@@ -20,39 +21,14 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect( &mUrgentImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
-    connect( &mUrgentNotImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
-    connect( &mNotUrgentImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
-    connect( &mNotUrgentNotImportant, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
-    connect( &mArchive, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)) );
-
-    ui->urgentImportant->setArchive(&mArchive);
-    ui->urgentNotImportant->setArchive(&mArchive);
-    ui->notUrgentImportant->setArchive(&mArchive);
-    ui->notUrgentNotImportant->setArchive(&mArchive);
-
-    mUrgentImportantProxy = new ItemProxyModel;
-    mUrgentImportantProxy->setSourceModel( &mUrgentImportant );
-    ui->urgentImportant->setModel( mUrgentImportantProxy );
-
-    mUrgentNotImportantProxy = new ItemProxyModel;
-    mUrgentNotImportantProxy->setSourceModel( &mUrgentNotImportant );
-    ui->urgentNotImportant->setModel( mUrgentNotImportantProxy );
-
-    mNotUrgentImportantProxy = new ItemProxyModel;
-    mNotUrgentImportantProxy->setSourceModel( &mNotUrgentImportant );
-    ui->notUrgentImportant->setModel( mNotUrgentImportantProxy );
-
-    mNotUrgentNotImportantProxy = new ItemProxyModel;
-    mNotUrgentNotImportantProxy->setSourceModel( &mNotUrgentNotImportant );
-    ui->notUrgentNotImportant->setModel( mNotUrgentNotImportantProxy );
-
     QWidget *archiveWidget = new QWidget;
     archiveUi->setupUi(archiveWidget);
 
-    mArchiveProxy = new ItemProxyModel;
-    mArchiveProxy->setSourceModel( &mArchive );
-    archiveUi->treeView->setModel(mArchiveProxy);
+    mLists[ MainWindow::UrgentImportant ] = new List( ui->urgentImportant,  "urgent-important" );
+    mLists[ MainWindow::NotUrgentImportant ] = new List( ui->notUrgentImportant,  "not-urgent-important" );
+    mLists[ MainWindow::UrgentNotImportant ] = new List( ui->urgentNotImportant,  "urgent-not-important" );
+    mLists[ MainWindow::NotUrgentNotImportant ] = new List( ui->notUrgentNotImportant,  "not-urgent-not-important" );
+    mLists[ MainWindow::Archive ] = new List( archiveUi->treeView,  "archive" );
 
     mArchiveDock = new QDockWidget(tr("Archive"),this,Qt::Drawer);
     mArchiveDock->setWidget(archiveWidget);
@@ -76,6 +52,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->notUrgentNotImportant,SIGNAL(save()),this,SLOT(writeXmlData()));
     connect(archiveUi->treeView,SIGNAL(save()),this,SLOT(writeXmlData()));
 
+    connect(ui->urgentImportant,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
+    connect(ui->urgentNotImportant,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
+    connect(ui->notUrgentImportant,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
+    connect(ui->notUrgentNotImportant,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
+
     mDataFolder = QDir::home();
     mDataFolder.mkdir("TaskManager");
     mDataFolder.cd("TaskManager");
@@ -89,6 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    qDeleteAll( mLists );
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -113,19 +95,19 @@ void MainWindow::addItemsToModel(const QString &string, QStandardItemModel *mode
     }
 }
 
-void MainWindow::serializeModel(QStandardItemModel *model, QXmlStreamWriter * stream, QTreeView * view, ItemProxyModel *proxy) const
+void MainWindow::serializeModel(List * list, QXmlStreamWriter *stream) const
 {
-    for(int i=0; i<model->rowCount(); i++)
+    for(int i=0; i<list->model->rowCount(); i++)
     {
-        serializeItem( model, model->item(i), stream, view, proxy );
+        serializeItem( list, list->model->item(i), stream );
     }
 }
 
-void MainWindow::serializeItem(QStandardItemModel *model, QStandardItem *item, QXmlStreamWriter *stream, QTreeView *view, ItemProxyModel *proxy) const
+void MainWindow::serializeItem(List *list, QStandardItem *item, QXmlStreamWriter *stream) const
 {
     stream->writeStartElement("task");
 
-    stream->writeAttribute("expanded" , view->isExpanded( proxy->mapFromSource( model->indexFromItem( item ) ) ) ? "yes" : "no" );
+    stream->writeAttribute("expanded" , list->view->isExpanded( list->proxy->mapFromSource( list->model->indexFromItem( item ) ) ) ? "yes" : "no" );
 
     stream->writeAttribute("completed" , item->checkState() == Qt::Checked ? "yes" : "no" );
     if( item->data( MainWindow::Date ).toDateTime().isValid() )
@@ -146,7 +128,7 @@ void MainWindow::serializeItem(QStandardItemModel *model, QStandardItem *item, Q
 
     for(int i=0; i<item->rowCount(); i++)
     {
-        serializeItem( model, item->child(i), stream, view, proxy );
+        serializeItem( list, item->child(i), stream );
     }
     stream->writeEndElement(); // task
 }
@@ -173,25 +155,12 @@ bool MainWindow::writeXmlData(QString path )
     stream.writeTextElement("lr-label", ui->lr->text() );
     stream.writeTextElement("date-format", mDateFormat );
 
-    stream.writeStartElement("urgent-important");
-    serializeModel(&mUrgentImportant,&stream, ui->urgentImportant, mUrgentImportantProxy);
-    stream.writeEndElement(); // urgent-important
-
-    stream.writeStartElement("urgent-not-important");
-    serializeModel(&mUrgentNotImportant,&stream, ui->urgentNotImportant, mUrgentNotImportantProxy);
-    stream.writeEndElement(); // urgent-not-important
-
-    stream.writeStartElement("not-urgent-important");
-    serializeModel(&mNotUrgentImportant,&stream, ui->notUrgentImportant, mNotUrgentImportantProxy);
-    stream.writeEndElement(); // not-urgent-important
-
-    stream.writeStartElement("not-urgent-not-important");
-    serializeModel(&mNotUrgentNotImportant,&stream, ui->notUrgentNotImportant, mNotUrgentNotImportantProxy);
-    stream.writeEndElement(); // not-urgent-not-important
-
-    stream.writeStartElement("archive");
-    serializeModel( &mArchive,&stream, archiveUi->treeView, mArchiveProxy );
-    stream.writeEndElement(); // archive
+    foreach( List * l, mLists )
+    {
+        stream.writeStartElement( l->xmlString );
+        serializeModel( l, &stream);
+        stream.writeEndElement();
+    }
 
     stream.writeEndElement(); // task-manager
     stream.writeEndDocument();
@@ -213,21 +182,16 @@ void MainWindow::readXmlData(QString path )
     }
 
     // clear the models
-    mUrgentImportant.clear();
-    mUrgentNotImportant.clear();
-    mNotUrgentImportant.clear();
-    mNotUrgentNotImportant.clear();
-    mArchive.clear();
+    foreach( List * l, mLists )
+    {
+        l->model->clear();
+    }
 
     QXmlStreamReader stream(&file);
-    QStandardItemModel * currentModel = nullptr;
     QStack<QStandardItem*> currentItem;
 
-    QList<QStandardItem*> * currentExpandedList = nullptr;
-    QList<QStandardItem*> expandedUrgentImportant;
-    QList<QStandardItem*> expandedUrgentNotImportant;
-    QList<QStandardItem*> expandedNotUrgentImportant;
-    QList<QStandardItem*> expandedNotUrgentNotImportant;
+    MainWindow::ListType currentList;
+    QHash<MainWindow::ListType, QList<QStandardItem*>> expandList;
 
     while (!stream.atEnd())
     {
@@ -259,27 +223,23 @@ void MainWindow::readXmlData(QString path )
             }
             else if( name == "urgent-important" )
             {
-                currentModel = &mUrgentImportant;
-                currentExpandedList = &expandedUrgentImportant;
+                currentList = MainWindow::UrgentImportant;
             }
             else if( name == "urgent-not-important" )
             {
-                currentModel = &mUrgentNotImportant;
-                currentExpandedList = &expandedUrgentNotImportant;
+                currentList = MainWindow::UrgentNotImportant;
             }
             else if( name == "not-urgent-important" )
             {
-                currentModel = &mNotUrgentImportant;
-                currentExpandedList = &expandedNotUrgentImportant;
+                currentList = MainWindow::NotUrgentImportant;
             }
             else if( name == "not-urgent-not-important" )
             {
-                currentModel = &mNotUrgentNotImportant;
-                currentExpandedList = &expandedNotUrgentNotImportant;
+                currentList = MainWindow::NotUrgentNotImportant;
             }
             else if( name == "archive" )
             {
-                currentModel = &mArchive;
+                currentList = MainWindow::Archive;
             }
             else if( name == "task" )
             {
@@ -292,11 +252,11 @@ void MainWindow::readXmlData(QString path )
 
                 if( attributes.value("expanded").toString() == "yes" )
                 {
-                    currentExpandedList->append( item );
+                    expandList[currentList].append( item );
                 }
                 if( currentItem.isEmpty() )
                 {
-                    currentModel->appendRow( item );
+                    mLists[currentList]->model->appendRow(item);
                 }
                 else
                 {
@@ -314,24 +274,13 @@ void MainWindow::readXmlData(QString path )
         }
     }
 
-    foreach( QStandardItem * item, expandedUrgentImportant )
+    QList<MainWindow::ListType> keys = expandList.keys();
+    foreach( MainWindow::ListType key, keys )
     {
-        ui->urgentImportant->setExpanded( mUrgentImportantProxy->mapFromSource( mUrgentImportant.indexFromItem( item ) ), true );
-    }
-
-    foreach( QStandardItem * item, expandedNotUrgentImportant )
-    {
-        ui->notUrgentImportant->setExpanded( mNotUrgentImportantProxy->mapFromSource( mNotUrgentImportant.indexFromItem( item ) ), true );
-    }
-
-    foreach( QStandardItem * item, expandedUrgentNotImportant )
-    {
-        ui->urgentNotImportant->setExpanded( mUrgentNotImportantProxy->mapFromSource( mUrgentNotImportant.indexFromItem( item ) ), true );
-    }
-
-    foreach( QStandardItem * item, expandedNotUrgentNotImportant )
-    {
-        ui->notUrgentNotImportant->setExpanded( mNotUrgentNotImportantProxy->mapFromSource( mNotUrgentNotImportant.indexFromItem( item ) ), true );
+        foreach( QStandardItem * item, expandList.value(key) )
+        {
+            mLists[key]->view->setExpanded( mLists[key]->indexFromItem( item ), true );
+        }
     }
 }
 
@@ -433,7 +382,7 @@ void MainWindow::removeAllFromArchive()
 {
     if( QMessageBox::Yes == QMessageBox::question(this, tr("Task Manager"), tr("Are you sure you want to clear the archive?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No ) )
     {
-        mArchive.clear();
+        mLists[MainWindow::Archive]->model->clear();
     }
 }
 
@@ -477,10 +426,15 @@ void MainWindow::saveAs()
     }
 }
 
+void MainWindow::archiveItem(QStandardItem *item)
+{
+    mLists[MainWindow::Archive]->model->appendRow(item);
+}
+
 void MainWindow::propagateDateTime()
 {
-    ui->urgentImportant->setDateTimeFormat(mDateFormat);
-    ui->urgentNotImportant->setDateTimeFormat(mDateFormat);
-    ui->notUrgentImportant->setDateTimeFormat(mDateFormat);
-    ui->notUrgentNotImportant->setDateTimeFormat(mDateFormat);
+    foreach( List * l, mLists )
+    {
+        l->view->setDateTimeFormat(mDateFormat);
+    }
 }

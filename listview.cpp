@@ -106,7 +106,8 @@ void ListView::archive()
     {
         m->takeRow( selected.row() );
     }
-    mArchive->appendRow(item);
+//    mArchive->appendRow(item);
+    emit archiveItem(item);
 }
 
 void ListView::insert()

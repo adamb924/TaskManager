@@ -20,6 +20,7 @@ signals:
     void showArchive();
     void preferences();
     void save();
+    void archiveItem( QStandardItem * );
 
 protected slots:
     void insert();
