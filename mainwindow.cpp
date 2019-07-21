@@ -362,11 +362,12 @@ void MainWindow::cleanUpOldCopies()
     }
 }
 
-QStandardItem *MainWindow::newItem(bool checked, const QString &label, const QString & dateFormat, const QDateTime &date)
+QStandardItem *MainWindow::newItem(bool checked, const QString &label, const QString & dateFormat, const QDateTime &date, const QString &url)
 {
     QStandardItem * item = new QStandardItem();
     item->setData( false, MainWindow::JustChanged );
     item->setData( label, MainWindow::Label );
+    item->setData( url, MainWindow::Url );
     if(date.isValid())
     {
         item->setData( date , MainWindow::Date );

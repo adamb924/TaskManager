@@ -27,7 +27,7 @@ public:
     ~MainWindow();
 
     enum DataType { Label = Qt::UserRole+1, Date, JustChanged, Url };
-    static QStandardItem* newItem(bool checked, const QString & label, const QString & dateFormat, const QDateTime & date = QDateTime() );
+    static QStandardItem* newItem(bool checked, const QString & label, const QString & dateFormat, const QDateTime & date = QDateTime(), const QString & url = QString() );
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event);

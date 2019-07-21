@@ -5,7 +5,6 @@
 
 class QStandardItemModel;
 class QStandardItem;
-class MainWindow;
 
 class ListView : public QTreeView
 {
@@ -24,7 +23,9 @@ signals:
 
 protected slots:
     void insert();
+    void insertLink();
     void insertSubItem();
+    void insertSubItemLink();
     void insertHyperlink();
     void removeHyperlink();
     void remove();
@@ -39,7 +40,6 @@ protected:
 private:
     QStandardItemModel * mArchive;
     QString mDateFormat;
-    const MainWindow * mMainWnd;
 };
 
 #endif // LISTVIEW_H

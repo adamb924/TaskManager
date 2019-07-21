@@ -1,6 +1,7 @@
 #include "listview.h"
 #include "mainwindow.h"
 #include "itemproxymodel.h"
+#include "linkeditdialog.h"
 
 #include <QMenu>
 #include <QStandardItemModel>
@@ -36,6 +37,7 @@ void ListView::contextMenuEvent(QContextMenuEvent *e)
         menu.addAction( tr("Delete this item"), this,SLOT(remove()) );
         menu.addAction(tr("Archive this item"), this,SLOT(archive()));
         menu.addAction(tr("Insert subitem"), this,SLOT(insertSubItem()) );
+        menu.addAction(tr("Insert link as subitem"), this,SLOT(insertSubItemLink()) );
         menu.addSeparator();
         menu.addAction(tr("Insert/edit link"), this,SLOT(insertHyperlink()) );
         menu.addAction(tr("Remove link"), this,SLOT(removeHyperlink()) );
@@ -43,6 +45,7 @@ void ListView::contextMenuEvent(QContextMenuEvent *e)
     else
     {
         menu.addAction(tr("Insert an item"), this,SLOT(insert()) );
+        menu.addAction(tr("Insert a link"), this,SLOT(insertLink()) );
     }
     menu.addSeparator();
     menu.addAction(tr("Show the archive"), this,SIGNAL(showArchive()) );
@@ -110,9 +113,21 @@ void ListView::insert()
 {
     ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
     QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
-    QStandardItem *item = mMainWnd->newItem(false, "", mDateFormat);
-    m->appendRow( item ) ;
+    QStandardItem *item = MainWindow::newItem(false, "", mDateFormat);
+    m->appendRow( item );
     edit( ipm->mapFromSource( m->indexFromItem(item) ) );
+}
+
+void ListView::insertLink()
+{
+    ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
+    QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
+    LinkEditDialog dlg;
+    if( dlg.exec() == QDialog::Accepted )
+    {
+        QStandardItem *item = MainWindow::newItem(false, dlg.label(), mDateFormat, QDateTime(), dlg.url());
+        m->appendRow( item );
+    }
 }
 
 void ListView::insertSubItem()
@@ -123,10 +138,27 @@ void ListView::insertSubItem()
     if( selection.isEmpty() ) { return; }
     QStandardItem *parent = m->itemFromIndex( ipm->mapToSource( selection.first() ) );
 
-    QStandardItem *item = mMainWnd->newItem(false, "", mDateFormat);
+    QStandardItem *item = MainWindow::newItem(false, "", mDateFormat);
     expand(selection.first());
     parent->appendRow(item);
     edit( ipm->mapFromSource( m->indexFromItem(item) ) );
+}
+
+void ListView::insertSubItemLink()
+{
+    ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
+    QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
+    QModelIndexList selection = selectedIndexes();
+    if( selection.isEmpty() ) { return; }
+    QStandardItem *parent = m->itemFromIndex( ipm->mapToSource( selection.first() ) );
+
+    LinkEditDialog dlg;
+    if( dlg.exec() == QDialog::Accepted )
+    {
+        QStandardItem *item = MainWindow::newItem(false, dlg.label(), mDateFormat, QDateTime(), dlg.url());
+        expand(selection.first());
+        parent->appendRow(item);
+    }
 }
 
 void ListView::insertHyperlink()
@@ -134,10 +166,11 @@ void ListView::insertHyperlink()
     QStandardItem *item = getCurrentItem();
     if( item != nullptr )
     {
-        QString url = QInputDialog::getText(this, tr("Enter URL"), tr("Enter the link:") );
-        if( !url.isNull() )
+        LinkEditDialog dlg( item->text(), item->data(MainWindow::Url).toString() );
+        if( dlg.exec() == QDialog::Accepted )
         {
-            item->setData( url , MainWindow::Url );
+            item->setText( dlg.label() );
+            item->setData( dlg.url() , MainWindow::Url );
         }
     }
 }
