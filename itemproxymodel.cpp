@@ -24,7 +24,14 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
   {
       if( !url.isEmpty() )
       {
-          return QBrush(QColor(Qt::blue));
+          if( url.isLocalFile() )
+          {
+              return QBrush(QColor(Qt::darkBlue));
+          }
+          else
+          {
+              return QBrush(QColor(Qt::blue));
+          }
       }
       else
       {
