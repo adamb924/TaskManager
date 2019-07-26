@@ -19,6 +19,7 @@
 ListView::ListView(QWidget *parent) : QTreeView(parent)
 {
     setAcceptDrops(true);
+    setMouseTracking(true);
 }
 
 void ListView::contextMenuEvent(QContextMenuEvent *e)
@@ -146,6 +147,37 @@ void ListView::dropEvent(QDropEvent *event)
     else
     {
         QTreeView::dropEvent(event);
+    }
+}
+
+void ListView::mouseMoveEvent(QMouseEvent *event)
+{
+    if( QGuiApplication::keyboardModifiers() != Qt::ControlModifier )
+    {
+        setCursor(Qt::ArrowCursor);
+        QTreeView::mouseMoveEvent(event);
+        return;
+    }
+    QModelIndex index = indexAt( event->pos() );
+    if( index.isValid() )
+    {
+        ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
+        QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
+        QStandardItem *item = m->itemFromIndex( ipm->mapToSource( index ) );
+        if( !item->data(MainWindow::Url).toUrl().isEmpty() )
+        {
+            setCursor(Qt::PointingHandCursor);
+        }
+        else
+        {
+            setCursor(Qt::ArrowCursor);
+        }
+        QTreeView::mouseMoveEvent(event);
+    }
+    else
+    {
+        setCursor(Qt::ArrowCursor);
+        QTreeView::mouseMoveEvent(event);
     }
 }
 
