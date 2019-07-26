@@ -2,6 +2,7 @@
 #define LISTVIEW_H
 
 #include <QTreeView>
+#include <QUrl>
 
 class QStandardItemModel;
 class QStandardItem;
@@ -20,7 +21,7 @@ signals:
     void archiveItem( QStandardItem * );
 
 protected slots:
-    void insert();
+    void insert(QUrl url = QUrl());
     void insertLink();
     void insertSubItem();
     void insertSubItemLink();
@@ -28,6 +29,9 @@ protected slots:
     void removeHyperlink();
     void remove();
     void archive();
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
+    void dropEvent(QDropEvent* event);
 
 protected:
     void contextMenuEvent(QContextMenuEvent *e);

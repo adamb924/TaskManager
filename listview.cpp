@@ -12,11 +12,13 @@
 #include <QInputDialog>
 #include <QDesktopServices>
 #include <QGuiApplication>
+#include <QMimeData>
 
 #include <QtDebug>
 
 ListView::ListView(QWidget *parent) : QTreeView(parent)
 {
+    setAcceptDrops(true);
 }
 
 void ListView::contextMenuEvent(QContextMenuEvent *e)
@@ -63,10 +65,10 @@ void ListView::mouseDoubleClickEvent(QMouseEvent *event)
 
         if( item != nullptr )
         {
-            QString url = item->data(MainWindow::Url).toString();
+            QUrl url = item->data(MainWindow::Url).toUrl();
             if( !url.isEmpty() )
             {
-                QDesktopServices::openUrl( QUrl::fromUserInput( url ) );
+                QDesktopServices::openUrl( url );
             }
         }
     }
@@ -100,11 +102,62 @@ void ListView::archive()
     emit archiveItem(item);
 }
 
-void ListView::insert()
+void ListView::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasUrls())
+    {
+        event->acceptProposedAction();
+    }
+    else
+    {
+        QTreeView::dragEnterEvent(event);
+    }
+}
+
+void ListView::dragMoveEvent(QDragMoveEvent *event)
+{
+    if (event->mimeData()->hasUrls())
+    {
+        event->acceptProposedAction();
+    }
+    else
+    {
+        QTreeView::dragMoveEvent(event);
+    }
+}
+
+void ListView::dropEvent(QDropEvent *event)
+{
+    if (event->mimeData()->hasUrls())
+    {
+        QModelIndex index = indexAt( event->pos() );
+        ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
+        QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
+        QStandardItem *item = m->itemFromIndex( ipm->mapToSource( index ) );
+        if( item == nullptr )
+        {
+            insert( event->mimeData()->urls().at(0) );
+        }
+        else
+        {
+            item->setData( event->mimeData()->urls().at(0), MainWindow::Url );
+        }
+    }
+    else
+    {
+        QTreeView::dropEvent(event);
+    }
+}
+
+void ListView::insert(QUrl url)
 {
     ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
     QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
     QStandardItem *item = MainWindow::newItem(false, "");
+    if( !url.isEmpty() )
+    {
+        item->setData( url, MainWindow::Url );
+    }
     m->appendRow( item );
     edit( ipm->mapFromSource( m->indexFromItem(item) ) );
 }
@@ -171,7 +224,7 @@ void ListView::removeHyperlink()
     QStandardItem *item = getCurrentItem();
     if( item != nullptr )
     {
-        item->setData( QString() , MainWindow::Url );
+        item->setData( QUrl() , MainWindow::Url );
     }
 }
 

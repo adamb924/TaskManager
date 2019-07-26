@@ -16,7 +16,7 @@ public:
     ~LinkEditDialog();
 
     QString label() const;
-    QString url() const;
+    QUrl url() const;
 
 private:
     Ui::LinkEditDialog *ui;

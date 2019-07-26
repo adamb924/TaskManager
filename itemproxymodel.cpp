@@ -3,6 +3,7 @@
 
 #include <QtDebug>
 #include <QStandardItemModel>
+#include <QUrl>
 
 ItemProxyModel::ItemProxyModel()
 {
@@ -16,7 +17,7 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
 
   QStandardItemModel* model = qobject_cast<QStandardItemModel*>(sourceModel());
   QStandardItem * item = model->itemFromIndex( mapToSource( index ) );
-  QString url = item->data(MainWindow::Url).toString();
+  QUrl url = item->data(MainWindow::Url).toUrl();
   bool completed = item->data(MainWindow::Completed).toBool();
 
   if( role == Qt::ForegroundRole )

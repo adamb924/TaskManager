@@ -1,6 +1,8 @@
 #include "linkeditdialog.h"
 #include "ui_linkeditdialog.h"
 
+#include <QUrl>
+
 LinkEditDialog::LinkEditDialog(const QString &label, const QString &url, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::LinkEditDialog)
@@ -20,7 +22,7 @@ QString LinkEditDialog::label() const
     return ui->labelEdit->text();
 }
 
-QString LinkEditDialog::url() const
+QUrl LinkEditDialog::url() const
 {
-    return ui->urlEdit->text();
+    return QUrl(ui->urlEdit->text());
 }

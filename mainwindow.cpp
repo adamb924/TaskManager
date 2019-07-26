@@ -51,6 +51,10 @@ MainWindow::MainWindow(QWidget *parent)
     mDataFolder.setNameFilters( QStringList() << "TaskManager*.xml" );
     mDataFolder.setSorting(QDir::Name | QDir::Reversed);
 
+    QSettings settings("AdamBaker", "TaskManager");
+    restoreGeometry(settings.value("geometry").toByteArray());
+    restoreState(settings.value("windowState").toByteArray());
+
     readXmlData();
 
     propagateDateTime();
@@ -70,6 +74,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->ignore();
     }
     cleanUpOldCopies();
+
+    QSettings settings("AdamBaker", "TaskManager");
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("windowState", saveState());
 }
 
 void MainWindow::serializeModel(List * list, QXmlStreamWriter *stream) const
@@ -95,10 +103,10 @@ void MainWindow::serializeItem(List *list, QStandardItem *item, QXmlStreamWriter
         stream->writeAttribute("date" , item->data( MainWindow::Date ).toDateTime().toString(Qt::ISODate) );
     }
 
-    QString url = item->data( MainWindow::Url ).toString();
+    QUrl url = item->data( MainWindow::Url ).toUrl();
     if( !url.isEmpty() )
     {
-        stream->writeAttribute("href" , url );
+        stream->writeAttribute("href" , url.toString() );
     }
 
     for(int i=0; i<item->rowCount(); i++)
@@ -222,7 +230,7 @@ void MainWindow::readXmlData(QString path )
 
                 if( attributes.hasAttribute("href") )
                 {
-                    item->setData( attributes.value("href").toString(), MainWindow::Url );
+                    item->setData( QUrl(attributes.value("href").toString()), MainWindow::Url );
                 }
 
                 if( attributes.value("expanded").toString() == "yes" )
@@ -286,7 +294,7 @@ void MainWindow::cleanUpOldCopies()
     }
 }
 
-QStandardItem *MainWindow::newItem(bool completed, const QString &label, const QDateTime &date, const QString &url)
+QStandardItem *MainWindow::newItem(bool completed, const QString &label, const QDateTime &date, const QUrl &url)
 {
     QStandardItem * item = new QStandardItem();
     item->setData( false, MainWindow::JustChanged );
