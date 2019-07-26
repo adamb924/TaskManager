@@ -58,20 +58,9 @@ QStandardItem *ListView::getCurrentItem()
 
 void ListView::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    if( Qt::ControlModifier & QGuiApplication::keyboardModifiers() )
+    if( QGuiApplication::keyboardModifiers() == Qt::ControlModifier )
     {
-        ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
-        QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
-        QStandardItem * item = m->itemFromIndex( ipm->mapToSource( indexAt( event->pos() ) ) );
-
-        if( item != nullptr )
-        {
-            QUrl url = item->data(MainWindow::Url).toUrl();
-            if( !url.isEmpty() )
-            {
-                QDesktopServices::openUrl( url );
-            }
-        }
+        openLink(event->pos());
     }
     else
     {
@@ -99,7 +88,6 @@ void ListView::archive()
     {
         m->takeRow( selected.row() );
     }
-//    mArchive->appendRow(item);
     emit archiveItem(item);
 }
 
@@ -178,6 +166,34 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
     {
         setCursor(Qt::ArrowCursor);
         QTreeView::mouseMoveEvent(event);
+    }
+}
+
+void ListView::mousePressEvent(QMouseEvent *event)
+{
+    if( QGuiApplication::keyboardModifiers() == Qt::ControlModifier && event->button() == Qt::LeftButton )
+    {
+        openLink(event->pos());
+    }
+    else
+    {
+        QTreeView::mousePressEvent(event);
+    }
+}
+
+void ListView::openLink(const QPoint &pos)
+{
+    ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
+    QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
+    QStandardItem * item = m->itemFromIndex( ipm->mapToSource( indexAt( pos ) ) );
+
+    if( item != nullptr )
+    {
+        QUrl url = item->data(MainWindow::Url).toUrl();
+        if( !url.isEmpty() )
+        {
+            QDesktopServices::openUrl( url );
+        }
     }
 }
 

@@ -33,6 +33,8 @@ protected slots:
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent* event);
     void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void openLink(const QPoint &pos);
 
 protected:
     void contextMenuEvent(QContextMenuEvent *e);
