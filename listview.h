@@ -19,6 +19,9 @@ signals:
     void preferences();
     void save();
     void archiveItem( QStandardItem * );
+    void openFile();
+    void openDataDirectory();
+    void saveAs();
 
 protected slots:
     void insert(QUrl url = QUrl());
@@ -38,7 +41,8 @@ protected slots:
 
 protected:
     void contextMenuEvent(QContextMenuEvent *e);
-    QStandardItem * getCurrentItem();
+    QStandardItem * getSelectedItem();
+    QStandardItem *getItem(const QPoint &pos);
     void mouseDoubleClickEvent(QMouseEvent *event);
 };
 

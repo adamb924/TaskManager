@@ -27,13 +27,22 @@ void ListView::contextMenuEvent(QContextMenuEvent *e)
     QMenu menu;
     if( indexAt(e->pos()).isValid() )
     {
+        QStandardItem * item = getItem(e->pos());
+
         menu.addAction( tr("Delete this item"), this,SLOT(remove()) );
         menu.addAction(tr("Archive this item"), this,SLOT(archive()));
         menu.addAction(tr("Insert subitem"), this,SLOT(insertSubItem()) );
-        menu.addAction(tr("Insert link as subitem"), this,SLOT(insertSubItemLink()) );
         menu.addSeparator();
-        menu.addAction(tr("Insert/edit link"), this,SLOT(insertHyperlink()) );
-        menu.addAction(tr("Remove link"), this,SLOT(removeHyperlink()) );
+        if( item->data(MainWindow::Url).toUrl().isValid() )
+        {
+            menu.addAction(tr("Edit link"), this,SLOT(insertHyperlink()) );
+            menu.addAction(tr("Remove link"), this,SLOT(removeHyperlink()) );
+        }
+        else
+        {
+            menu.addAction(tr("Add link"), this,SLOT(insertHyperlink()) );
+        }
+        menu.addAction(tr("Insert link as subitem"), this,SLOT(insertSubItemLink()) );
     }
     else
     {
@@ -43,17 +52,31 @@ void ListView::contextMenuEvent(QContextMenuEvent *e)
     menu.addSeparator();
     menu.addAction(tr("Show the archive"), this,SIGNAL(showArchive()) );
     menu.addAction(tr("Preferences"), this,SIGNAL(preferences()) );
+
+    menu.addSeparator();
+    menu.addAction(tr("Open..."), this, SIGNAL(openFile()));
+    menu.addAction(tr("Open the data directory..."), this, SIGNAL(openDataDirectory()));
+    menu.addSeparator();
     menu.addAction(tr("Save"), this,SIGNAL(save()) );
+    menu.addAction(tr("Save as..."), this, SIGNAL(saveAs()));
+
     menu.exec(e->globalPos());
 }
 
-QStandardItem *ListView::getCurrentItem()
+QStandardItem *ListView::getSelectedItem()
 {
     ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
     QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
     QModelIndexList selection = selectedIndexes();
     if( selection.isEmpty() ) { return nullptr; }
     return m->itemFromIndex( ipm->mapToSource( selection.first() ) );
+}
+
+QStandardItem *ListView::getItem(const QPoint &pos)
+{
+    ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
+    QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
+    return m->itemFromIndex( ipm->mapToSource( indexAt( pos ) ) );
 }
 
 void ListView::mouseDoubleClickEvent(QMouseEvent *event)
@@ -183,10 +206,7 @@ void ListView::mousePressEvent(QMouseEvent *event)
 
 void ListView::openLink(const QPoint &pos)
 {
-    ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
-    QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
-    QStandardItem * item = m->itemFromIndex( ipm->mapToSource( indexAt( pos ) ) );
-
+    QStandardItem * item = getItem(pos);
     if( item != nullptr )
     {
         QUrl url = item->data(MainWindow::Url).toUrl();
@@ -255,7 +275,7 @@ void ListView::insertSubItemLink()
 
 void ListView::insertHyperlink()
 {
-    QStandardItem *item = getCurrentItem();
+    QStandardItem *item = getSelectedItem();
     if( item != nullptr )
     {
         LinkEditDialog dlg( item->data(MainWindow::Label).toString(), item->data(MainWindow::Url).toString() );
@@ -269,7 +289,7 @@ void ListView::insertHyperlink()
 
 void ListView::removeHyperlink()
 {
-    QStandardItem *item = getCurrentItem();
+    QStandardItem *item = getSelectedItem();
     if( item != nullptr )
     {
         item->setData( QUrl() , MainWindow::Url );

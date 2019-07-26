@@ -32,10 +32,6 @@ public:
     enum DataType { Label = Qt::UserRole+1, Date, JustChanged, Url, Completed };
     static QStandardItem* newItem(bool checked, const QString & label, const QDateTime & date = QDateTime(), const QUrl &url = QString() );
 
-
-protected:
-    void contextMenuEvent(QContextMenuEvent *event);
-
 public slots:
     void showArchive();
     void preferences();

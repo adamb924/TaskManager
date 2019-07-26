@@ -43,6 +43,10 @@ MainWindow::MainWindow(QWidget *parent)
         connect(l->view,SIGNAL(preferences()),this,SLOT(preferences()));
         connect(l->view,SIGNAL(save()),this,SLOT(writeXmlData()));
         connect(l->view,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
+
+        connect(l->view,SIGNAL(openFile()),this,SLOT(openFile()));
+        connect(l->view,SIGNAL(openDataDirectory()),this,SLOT(openDataDirectory()));
+        connect(l->view,SIGNAL(saveAs()),this,SLOT(saveAs()));
     }
 
     mDataFolder = QDir::home();
@@ -324,16 +328,6 @@ QStandardItem *MainWindow::newItem(bool completed, const QString &label, const Q
     return item;
 }
 
-void MainWindow::contextMenuEvent(QContextMenuEvent *event)
-{
-    QMenu *menu = new QMenu(this);
-    menu->addAction(tr("Open..."), this, SLOT(openFile()));
-    menu->addAction(tr("Save as..."), this, SLOT(saveAs()));
-    menu->addAction(tr("Open the data directory..."), this, SLOT(openDataDirectory()));
-
-    menu->exec(event->globalPos());
-}
-
 void MainWindow::showArchive()
 {
     mArchiveDock->show();
@@ -371,10 +365,13 @@ void MainWindow::removeAllFromArchive()
 
 void MainWindow::openFile()
 {
-    QString path = QFileDialog::getOpenFileName(this, tr("Select file..."), mDataFolder.absolutePath(), tr("XML Files (*.xml)") );
-    if( !path.isNull() )
+    if( QMessageBox::Yes == QMessageBox::question(this, tr("Task Manager"), tr("If you open another file, all of your current tasks will be lost. (You can always use ‘Save as...’ to save them someplace.) Is that what you want to do?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No ) )
     {
-        readXmlData(path);
+        QString path = QFileDialog::getOpenFileName(this, tr("Select file..."), mDataFolder.absolutePath(), tr("XML Files (*.xml)") );
+        if( !path.isNull() )
+        {
+            readXmlData(path);
+        }
     }
 }
 
