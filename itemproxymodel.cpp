@@ -18,7 +18,7 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
   QStandardItemModel* model = qobject_cast<QStandardItemModel*>(sourceModel());
   QStandardItem * item = model->itemFromIndex( mapToSource( index ) );
   QUrl url = item->data(MainWindow::Url).toUrl();
-  bool completed = item->data(MainWindow::Completed).toBool();
+  QDateTime completed = item->data(MainWindow::DateCompleted).toDateTime();
 
   if( role == Qt::ForegroundRole )
   {
@@ -53,9 +53,9 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
   }
   else if( role == Qt::DisplayRole )
   {
-      if( completed )
+      if( completed.isValid() )
       {
-          return tr("%1 (%2)").arg( item->data(MainWindow::Label).toString() ).arg( item->data(MainWindow::Date).toDateTime().toString( mDateFormat ) );
+          return tr("%1 (%2)").arg( item->data(MainWindow::Label).toString() ).arg( item->data(MainWindow::DateCompleted).toDateTime().toString( mDateFormat ) );
       }
       else
       {

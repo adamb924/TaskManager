@@ -100,7 +100,7 @@ void ListView::archive()
     QModelIndex selected = ipm->mapToSource( selection.first() );
     QStandardItem *item = m->itemFromIndex( selected );
 
-    item->setData( QDate::currentDate() , MainWindow::Date );
+    item->setData( QDate::currentDate() , MainWindow::DateCompleted );
 
     if( selection.first().parent() != QModelIndex() )
     {
@@ -221,7 +221,7 @@ void ListView::insert(QUrl url)
 {
     ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
     QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
-    QStandardItem *item = MainWindow::newItem(false, "");
+    QStandardItem *item = MainWindow::newItem(false, "", QDateTime::currentDateTime());
     if( !url.isEmpty() )
     {
         item->setData( url, MainWindow::Url );
@@ -237,7 +237,7 @@ void ListView::insertLink()
     LinkEditDialog dlg;
     if( dlg.exec() == QDialog::Accepted )
     {
-        QStandardItem *item = MainWindow::newItem(false, dlg.label(), QDateTime(), dlg.url());
+        QStandardItem *item = MainWindow::newItem(false, dlg.label(), QDateTime::currentDateTime(), QDateTime(), dlg.url());
         m->appendRow( item );
     }
 }
@@ -250,7 +250,7 @@ void ListView::insertSubItem()
     if( selection.isEmpty() ) { return; }
     QStandardItem *parent = m->itemFromIndex( ipm->mapToSource( selection.first() ) );
 
-    QStandardItem *item = MainWindow::newItem(false, "");
+    QStandardItem *item = MainWindow::newItem(false, "", QDateTime::currentDateTime());
     expand(selection.first());
     parent->appendRow(item);
     edit( ipm->mapFromSource( m->indexFromItem(item) ) );
@@ -267,7 +267,7 @@ void ListView::insertSubItemLink()
     LinkEditDialog dlg;
     if( dlg.exec() == QDialog::Accepted )
     {
-        QStandardItem *item = MainWindow::newItem(false, dlg.label(), QDateTime(), dlg.url());
+        QStandardItem *item = MainWindow::newItem(false, dlg.label(), QDateTime::currentDateTime(), QDateTime(), dlg.url());
         expand(selection.first());
         parent->appendRow(item);
     }

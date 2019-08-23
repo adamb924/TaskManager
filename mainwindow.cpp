@@ -102,10 +102,12 @@ void MainWindow::serializeItem(List *list, QStandardItem *item, QXmlStreamWriter
 
     stream->writeAttribute("label" , item->data( MainWindow::Label ).toString() );
 
-    if( item->data( MainWindow::Date ).toDateTime().isValid() )
+    if( item->data( MainWindow::DateCompleted ).toDateTime().isValid() )
     {
-        stream->writeAttribute("date" , item->data( MainWindow::Date ).toDateTime().toString(Qt::ISODate) );
+        stream->writeAttribute("date-completed" , item->data( MainWindow::DateCompleted ).toDateTime().toString(Qt::ISODate) );
     }
+
+    stream->writeAttribute("date-created" , item->data( MainWindow::DateCreated ).toDateTime().toString(Qt::ISODate) );
 
     QUrl url = item->data( MainWindow::Url ).toUrl();
     if( !url.isEmpty() )
@@ -230,12 +232,28 @@ void MainWindow::readXmlData(QString path )
             }
             else if( name == "task" )
             {
-                QStandardItem * item = newItem( attributes.value("completed").toString() == "yes", attributes.value("label").toString(), attributes.hasAttribute("date") ? QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate ) : QDateTime() );
+                bool completed = attributes.value("completed").toString() == "yes";
+                QString label = attributes.value("label").toString();
+                QDateTime dateCompleted;
+                if( attributes.hasAttribute("date") ) { // backwards compatibility
+                    dateCompleted = QDateTime::fromString(attributes.value("date").toString(), Qt::ISODate );
+                } else if( attributes.hasAttribute("date-completed") ) {
+                    dateCompleted = QDateTime::fromString(attributes.value("date-completed").toString(), Qt::ISODate );
+                }
 
+                QDateTime dateCreated;
+                if( attributes.hasAttribute("date-created") )
+                {
+                    dateCreated = QDateTime::fromString( attributes.value("date-created").toString(), Qt::ISODate);
+                }
+
+                QString href;
                 if( attributes.hasAttribute("href") )
                 {
-                    item->setData( QUrl(attributes.value("href").toString()), MainWindow::Url );
+                    href = attributes.value("href").toString();
                 }
+
+                QStandardItem * item = newItem( completed, label, dateCreated, dateCompleted, QUrl(href) );
 
                 if( attributes.value("expanded").toString() == "yes" )
                 {
@@ -298,21 +316,21 @@ void MainWindow::cleanUpOldCopies()
     }
 }
 
-QStandardItem *MainWindow::newItem(bool completed, const QString &label, const QDateTime &date, const QUrl &url)
+QStandardItem *MainWindow::newItem(bool completed, const QString &label, const QDateTime &dateCreated, const QDateTime &dateCompleted, const QUrl &url)
 {
     QStandardItem * item = new QStandardItem();
     item->setData( false, MainWindow::JustChanged );
     item->setText( label );
     item->setData( label, MainWindow::Label );
-    item->setData( completed , MainWindow::Completed );
     item->setData( url, MainWindow::Url );
-    if(date.isValid())
+    item->setData( dateCreated, MainWindow::DateCreated );
+    if(dateCompleted.isValid())
     {
-        item->setData( date , MainWindow::Date );
+        item->setData( dateCompleted , MainWindow::DateCompleted );
     }
     else
     {
-        item->setData( 0 , MainWindow::Date );
+        item->setData( QDateTime() , MainWindow::DateCompleted );
     }
     item->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
     if( completed )
@@ -409,15 +427,13 @@ void MainWindow::itemChanged(QStandardItem *item)
     if( !justChanged && checked )
     {
         item->setData( true , MainWindow::JustChanged );
-        item->setData( true , MainWindow::Completed );
-        item->setData( QDateTime::currentDateTime() , MainWindow::Date );
+        item->setData( QDateTime::currentDateTime() , MainWindow::DateCompleted );
         item->setData( item->text() , MainWindow::Label );
     }
     else if ( justChanged && !checked )
     {
         item->setData( false , MainWindow::JustChanged );
-        item->setData( false , MainWindow::Completed );
-        item->setData( 0, MainWindow::Date );
+        item->setData(  QDateTime() , MainWindow::DateCompleted );
         item->setData( item->text() , MainWindow::Label );
     }
     else
