@@ -28,3 +28,4 @@ FORMS += \
     mainwindow.ui \
     archive.ui \
     preferencesdialog.ui
+RC_ICONS = icons/TaskManager.ico
