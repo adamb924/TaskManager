@@ -8,6 +8,8 @@
 
 List::List(ListView *v, const QString &xml) : model(new QStandardItemModel), proxy(new ItemProxyModel), view(v), xmlString(xml)
 {
+    model->setObjectName(xmlString);
+    proxy->setObjectName(xmlString);
     proxy->setSourceModel( model );
     view->setModel( proxy );
 }

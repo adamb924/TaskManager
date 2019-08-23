@@ -18,7 +18,7 @@ signals:
     void showArchive();
     void preferences();
     void save();
-    void archiveItem( QStandardItem * );
+    void archiveItem( QStandardItem *, const QString &);
     void openFile();
     void openDataDirectory();
     void saveAs();

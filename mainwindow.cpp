@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
         connect(l->view,SIGNAL(showArchive()),this,SLOT(showArchive()));
         connect(l->view,SIGNAL(preferences()),this,SLOT(preferences()));
         connect(l->view,SIGNAL(save()),this,SLOT(writeXmlData()));
-        connect(l->view,SIGNAL(archiveItem(QStandardItem *)),this,SLOT(archiveItem(QStandardItem *)));
+        connect(l->view,SIGNAL(archiveItem(QStandardItem *,QString)),this,SLOT(archiveItem(QStandardItem *,QString)));
 
         connect(l->view,SIGNAL(openFile()),this,SLOT(openFile()));
         connect(l->view,SIGNAL(openDataDirectory()),this,SLOT(openDataDirectory()));
@@ -108,6 +108,8 @@ void MainWindow::serializeItem(List *list, QStandardItem *item, QXmlStreamWriter
     }
 
     stream->writeAttribute("date-created" , item->data( MainWindow::DateCreated ).toDateTime().toString(Qt::ISODate) );
+
+    stream->writeAttribute("origin-list" , item->data( MainWindow::OriginList ).toString() );
 
     QUrl url = item->data( MainWindow::Url ).toUrl();
     if( !url.isEmpty() )
@@ -254,6 +256,10 @@ void MainWindow::readXmlData(QString path )
                 }
 
                 QStandardItem * item = newItem( completed, label, dateCreated, dateCompleted, QUrl(href) );
+                if( attributes.hasAttribute("origin-list") )
+                {
+                    item->setData( attributes.value("origin-list").toString(), MainWindow::OriginList );
+                }
 
                 if( attributes.value("expanded").toString() == "yes" )
                 {
@@ -407,8 +413,9 @@ void MainWindow::saveAs()
     }
 }
 
-void MainWindow::archiveItem(QStandardItem *item)
+void MainWindow::archiveItem(QStandardItem *item, const QString &origin)
 {
+    item->setData( origin, MainWindow::OriginList );
     mLists[MainWindow::Archive]->model->appendRow(item);
 }
 

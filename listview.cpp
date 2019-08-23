@@ -111,7 +111,7 @@ void ListView::archive()
     {
         m->takeRow( selected.row() );
     }
-    emit archiveItem(item);
+    emit archiveItem(item, m->objectName());
 }
 
 void ListView::dragEnterEvent(QDragEnterEvent *event)
@@ -194,6 +194,14 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
 
 void ListView::mousePressEvent(QMouseEvent *event)
 {
+    if(event->button() == Qt::LeftButton)
+    {
+        QStandardItem * item = getItem(event->pos());
+        if( item != nullptr )
+        {
+            item->setData(model()->objectName(), MainWindow::OriginList);
+        }
+    }
     if( QGuiApplication::keyboardModifiers() == Qt::ControlModifier && event->button() == Qt::LeftButton )
     {
         openLink(event->pos());

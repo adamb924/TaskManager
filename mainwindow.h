@@ -42,7 +42,7 @@ private slots:
     void openFile();
     void openDataDirectory();
     void saveAs();
-    void archiveItem(QStandardItem *item);
+    void archiveItem(QStandardItem *item, const QString & origin);
     void itemChanged(QStandardItem *item);
 
 private:
