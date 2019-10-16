@@ -29,7 +29,7 @@ public:
     ~MainWindow();
 
     enum ListType { UrgentImportant, NotUrgentImportant, UrgentNotImportant, NotUrgentNotImportant, Archive };
-    enum DataType { Label = Qt::UserRole+1, DateCompleted, JustChanged, Url, DateCreated, OriginList };
+    enum DataType { Label = Qt::UserRole+1, DateCompleted, JustChanged, Url, DateCreated, OriginList, PutOnHold };
     static QStandardItem* newItem(bool checked, const QString & label, const QDateTime & dateCreated = QDateTime(), const QDateTime & dateCompleted = QDateTime(), const QUrl &url = QString() );
 
 public slots:

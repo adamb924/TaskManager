@@ -30,6 +30,14 @@ void ListView::contextMenuEvent(QContextMenuEvent *e)
         QStandardItem * item = getItem(e->pos());
 
         menu.addAction( tr("Delete this item"), this,SLOT(remove()) );
+
+        QAction *putOnHold = new QAction(tr("Put on hold"));
+        putOnHold->setCheckable(true);
+        putOnHold->setChecked( item->data(MainWindow::PutOnHold).toBool() );
+        connect( putOnHold, SIGNAL(triggered()), this, SLOT(togglePutOnHold()) );
+        menu.addAction( putOnHold );
+
+
         menu.addAction(tr("Archive this item"), this,SLOT(archive()));
         menu.addAction(tr("Insert subitem"), this,SLOT(insertSubItem()) );
         menu.addSeparator();
@@ -225,6 +233,15 @@ void ListView::openLink(const QPoint &pos)
     }
 }
 
+void ListView::togglePutOnHold()
+{
+    QStandardItem *item = getSelectedItem();
+    if( item != nullptr )
+    {
+        item->setData( ! item->data(MainWindow::PutOnHold).toBool(), MainWindow::PutOnHold );
+    }
+}
+
 void ListView::insert(QUrl url)
 {
     ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
@@ -286,7 +303,7 @@ void ListView::insertHyperlink()
     QStandardItem *item = getSelectedItem();
     if( item != nullptr )
     {
-        LinkEditDialog dlg( item->data(MainWindow::Label).toString(), item->data(MainWindow::Url).toString() );
+        LinkEditDialog dlg( item->data(MainWindow::Label).toString(), item->data(MainWindow::Url).toString(), true );
         if( dlg.exec() == QDialog::Accepted )
         {
             item->setText( dlg.label() );

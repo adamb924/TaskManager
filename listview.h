@@ -38,6 +38,7 @@ protected slots:
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void openLink(const QPoint &pos);
+    void togglePutOnHold();
 
 protected:
     void contextMenuEvent(QContextMenuEvent *e);

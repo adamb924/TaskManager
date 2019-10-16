@@ -19,6 +19,7 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
   QStandardItem * item = model->itemFromIndex( mapToSource( index ) );
   QUrl url = item->data(MainWindow::Url).toUrl();
   QDateTime completed = item->data(MainWindow::DateCompleted).toDateTime();
+  bool putOnHold = item->data(MainWindow::PutOnHold).toBool();
 
   if( role == Qt::ForegroundRole )
   {
@@ -35,7 +36,14 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
       }
       else
       {
-          return QIdentityProxyModel::data(index, role);
+          if( putOnHold )
+          {
+              return QBrush(QColor(Qt::darkGray));
+          }
+          else
+          {
+              return QIdentityProxyModel::data(index, role);
+          }
       }
   }
   else if( role == Qt::FontRole )
@@ -48,7 +56,16 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
       }
       else
       {
-          return QIdentityProxyModel::data(index, role);
+          if( putOnHold )
+          {
+              QFont f;
+              f.setItalic(true);
+              return f;
+          }
+          else
+          {
+              return QIdentityProxyModel::data(index, role);
+          }
       }
   }
   else if( role == Qt::DisplayRole )

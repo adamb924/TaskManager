@@ -100,6 +100,8 @@ void MainWindow::serializeItem(List *list, QStandardItem *item, QXmlStreamWriter
 
     stream->writeAttribute("completed" , item->checkState() == Qt::Checked ? "yes" : "no" );
 
+    stream->writeAttribute("put-on-hold" , item->data( MainWindow::PutOnHold ).toBool() ? "true" : "false" );
+
     stream->writeAttribute("label" , item->data( MainWindow::Label ).toString() );
 
     if( item->data( MainWindow::DateCompleted ).toDateTime().isValid() )
@@ -261,6 +263,11 @@ void MainWindow::readXmlData(QString path )
                     item->setData( attributes.value("origin-list").toString(), MainWindow::OriginList );
                 }
 
+                if( attributes.value("put-on-hold").toString() == "true" )
+                {
+                    item->setData(true, MainWindow::PutOnHold );
+                }
+
                 if( attributes.value("expanded").toString() == "yes" )
                 {
                     expandList[currentList].append( item );
@@ -330,6 +337,7 @@ QStandardItem *MainWindow::newItem(bool completed, const QString &label, const Q
     item->setData( label, MainWindow::Label );
     item->setData( url, MainWindow::Url );
     item->setData( dateCreated, MainWindow::DateCreated );
+    item->setData( false, MainWindow::PutOnHold );
     if(dateCompleted.isValid())
     {
         item->setData( dateCompleted , MainWindow::DateCompleted );

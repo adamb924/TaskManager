@@ -3,13 +3,17 @@
 
 #include <QUrl>
 
-LinkEditDialog::LinkEditDialog(const QString &label, const QString &url, QWidget *parent) :
+LinkEditDialog::LinkEditDialog(const QString &label, const QString &url, bool focusUrl, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::LinkEditDialog)
 {
     ui->setupUi(this);
     ui->labelEdit->setText(label);
     ui->urlEdit->setText(url);
+
+    if( focusUrl ) {
+        ui->urlEdit->setFocus();
+    }
 }
 
 LinkEditDialog::~LinkEditDialog()
