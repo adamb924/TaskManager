@@ -117,8 +117,6 @@ void ListView::archive()
     QModelIndex selected = ipm->mapToSource( selection.first() );
     QStandardItem *item = m->itemFromIndex( selected );
 
-    item->setData( QDate::currentDate() , MainWindow::DateCompleted );
-
     if( selection.first().parent() != QModelIndex() )
     {
         QStandardItem *parent = m->itemFromIndex( selected.parent() );
