@@ -58,15 +58,19 @@ void ListView::contextMenuEvent(QContextMenuEvent *e)
         menu.addAction(tr("Insert a link"), this,SLOT(insertLink()) );
     }
     menu.addSeparator();
-    menu.addAction(tr("Show the archive"), this,SIGNAL(showArchive()) );
-    menu.addAction(tr("Preferences"), this,SIGNAL(preferences()) );
 
-    menu.addSeparator();
-    menu.addAction(tr("Open..."), this, SIGNAL(openFile()));
-    menu.addAction(tr("Open the data directory..."), this, SIGNAL(openDataDirectory()));
-    menu.addSeparator();
-    menu.addAction(tr("Save"), this,SIGNAL(save()) );
-    menu.addAction(tr("Save as..."), this, SIGNAL(saveAs()));
+    QMenu * applicationMenu = new QMenu(tr("Application"), this);
+    applicationMenu->addAction(tr("Show the archive"), this,SIGNAL(showArchive()) );
+    applicationMenu->addAction(tr("Preferences"), this,SIGNAL(preferences()) );
+
+    applicationMenu->addSeparator();
+    applicationMenu->addAction(tr("Open..."), this, SIGNAL(openFile()));
+    applicationMenu->addAction(tr("Open the data directory..."), this, SIGNAL(openDataDirectory()));
+    applicationMenu->addSeparator();
+    applicationMenu->addAction(tr("Save"), this,SIGNAL(save()) );
+    applicationMenu->addAction(tr("Save as..."), this, SIGNAL(saveAs()));
+
+    menu.addMenu(applicationMenu);
 
     menu.exec(e->globalPos());
 }
