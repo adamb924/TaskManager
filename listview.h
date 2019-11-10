@@ -32,6 +32,7 @@ protected slots:
     void removeHyperlink();
     void remove();
     void archive();
+    void copyItem();
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent* event);
@@ -45,6 +46,7 @@ protected:
     QStandardItem * getSelectedItem();
     QStandardItem *getItem(const QPoint &pos);
     void mouseDoubleClickEvent(QMouseEvent *event);
+    QString getItemText(QStandardItem * item, const QString & subitemPrefix = QString());
 };
 
 #endif // LISTVIEW_H

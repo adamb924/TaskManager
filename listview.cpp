@@ -13,6 +13,7 @@
 #include <QDesktopServices>
 #include <QGuiApplication>
 #include <QMimeData>
+#include <QClipboard>
 
 #include <QtDebug>
 
@@ -57,6 +58,10 @@ void ListView::contextMenuEvent(QContextMenuEvent *e)
         menu.addAction(tr("Insert an item"), this,SLOT(insert()) );
         menu.addAction(tr("Insert a link"), this,SLOT(insertLink()) );
     }
+    menu.addSeparator();
+
+    menu.addAction(tr("Copy text"), this,SLOT(copyItem()) );
+
     menu.addSeparator();
 
     QMenu * applicationMenu = new QMenu(tr("Application"), this);
@@ -124,6 +129,32 @@ void ListView::archive()
         m->takeRow( selected.row() );
     }
     emit archiveItem(item, m->objectName());
+}
+
+void ListView::copyItem()
+{
+    QStandardItem *item = getSelectedItem();
+    if( item != nullptr )
+    {
+        QGuiApplication::clipboard()->setText( getItemText(item) );
+    }
+}
+
+QString ListView::getItemText(QStandardItem * item, const QString & subitemPrefix)
+{
+    if( item->rowCount() == 0 )
+    {
+        return item->text();
+    }
+    else
+    {
+        QString text = item->text();
+        for(int i=0; i<item->rowCount(); i++)
+        {
+            text += "\r\n" + subitemPrefix + "\t" + getItemText( item->child(i), tr("\t") + subitemPrefix);
+        }
+        return text;
+    }
 }
 
 void ListView::dragEnterEvent(QDragEnterEvent *event)
