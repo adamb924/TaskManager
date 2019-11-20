@@ -7,13 +7,14 @@
 
 ItemProxyModel::ItemProxyModel()
 {
-
+    setFilterCaseSensitivity(Qt::CaseInsensitive);
+    setRecursiveFilteringEnabled(true);
 }
 
 QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
 {
   if (role != Qt::ForegroundRole && role != Qt::FontRole && role != Qt::DisplayRole && role != Qt::EditRole)
-    return QIdentityProxyModel::data(index, role);
+    return QSortFilterProxyModel::data(index, role);
 
   QStandardItemModel* model = qobject_cast<QStandardItemModel*>(sourceModel());
   QStandardItem * item = model->itemFromIndex( mapToSource( index ) );
@@ -42,7 +43,7 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
           }
           else
           {
-              return QIdentityProxyModel::data(index, role);
+              return QSortFilterProxyModel::data(index, role);
           }
       }
   }
@@ -64,7 +65,7 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
           }
           else
           {
-              return QIdentityProxyModel::data(index, role);
+              return QSortFilterProxyModel::data(index, role);
           }
       }
   }

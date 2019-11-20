@@ -14,6 +14,7 @@ class QXmlStreamWriter;
 class QTreeView;
 class ItemProxyModel;
 class List;
+class FilterWidget;
 
 namespace Ui {
     class MainWindow;
@@ -32,6 +33,8 @@ public:
     enum DataType { Label = Qt::UserRole+1, DateCompleted, JustChanged, Url, DateCreated, OriginList, PutOnHold };
     static QStandardItem* newItem(bool checked, const QString & label, const QDateTime & dateCreated = QDateTime(), const QDateTime & dateCompleted = QDateTime(), const QUrl &url = QString() );
 
+    void setupFilterDock();
+
 public slots:
     void showArchive();
     void preferences();
@@ -44,6 +47,10 @@ private slots:
     void saveAs();
     void archiveItem(QStandardItem *item, const QString & origin);
     void itemChanged(QStandardItem *item);
+    void toggleDisplayFilterWindow();
+
+    void setCaseSensitiveFiltering(int checkState);
+    void checkForNoMatches();
 
 private:
     Ui::MainWindow *ui;
@@ -54,6 +61,8 @@ private:
     QString mDateFormat;
 
     QDockWidget *mArchiveDock;
+    FilterWidget * mFilterWidget;
+    QDockWidget * mFilterDock;
 
     QHash<MainWindow::ListType, List*> mLists;
 

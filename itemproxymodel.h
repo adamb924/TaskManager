@@ -1,9 +1,9 @@
 #ifndef ITEMPROXYMODEL_H
 #define ITEMPROXYMODEL_H
 
-#include <QIdentityProxyModel>
+#include <QSortFilterProxyModel>
 
-class ItemProxyModel : public  QIdentityProxyModel
+class ItemProxyModel : public  QSortFilterProxyModel
 {
     Q_OBJECT
 

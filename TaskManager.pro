@@ -11,6 +11,7 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
+    filterwidget.cpp \
     itemproxymodel.cpp \
     linkeditdialog.cpp \
     list.cpp \
@@ -18,12 +19,14 @@ SOURCES += main.cpp\
     listview.cpp
 
 HEADERS  += mainwindow.h \
+    filterwidget.h \
     itemproxymodel.h \
     linkeditdialog.h \
     list.h \
     listview.h
 
 FORMS += \
+    filterwidget.ui \
     linkeditdialog.ui \
     mainwindow.ui \
     archive.ui \

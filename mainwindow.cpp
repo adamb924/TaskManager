@@ -5,6 +5,7 @@
 
 #include "itemproxymodel.h"
 #include "list.h"
+#include "filterwidget.h"
 
 #include <QtWidgets>
 #include <QAbstractItemModel>
@@ -49,6 +50,8 @@ MainWindow::MainWindow(QWidget *parent)
         connect(l->view,SIGNAL(saveAs()),this,SLOT(saveAs()));
     }
 
+    setupFilterDock();
+
     mDataFolder = QDir::home();
     mDataFolder.mkdir("TaskManager");
     mDataFolder.cd("TaskManager");
@@ -62,6 +65,8 @@ MainWindow::MainWindow(QWidget *parent)
     readXmlData();
 
     propagateDateTime();
+
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this, SLOT(toggleDisplayFilterWindow()));
 }
 
 MainWindow::~MainWindow()
@@ -463,5 +468,79 @@ void MainWindow::itemChanged(QStandardItem *item)
         {
             model->removeRow( item->row() );
         }
+    }
+}
+
+void MainWindow::setupFilterDock()
+{
+    mFilterDock = new QDockWidget(this);
+    mFilterDock->setObjectName(tr("filterDock"));
+    mFilterDock->setTitleBarWidget(new QWidget());
+
+    mFilterWidget = new FilterWidget(mFilterDock);
+    connect(mFilterWidget,SIGNAL(closeFilter()), this, SLOT(toggleDisplayFilterWindow()));
+    connect(mFilterWidget,SIGNAL(setCaseSensitive(int)), this, SLOT(setCaseSensitiveFiltering(int)));
+
+    // make sure that the filter is updated before we check for no matches
+    foreach( List * l, mLists )
+    {
+        connect(mFilterWidget,SIGNAL(filterChanged(QString)), l->proxy, SLOT( setFilterFixedString(QString) ) );
+    }
+    connect(mFilterWidget,SIGNAL(filterChanged(QString)), this, SLOT( checkForNoMatches() ));
+
+
+    mFilterDock->setWidget(mFilterWidget);
+    addDockWidget(Qt::BottomDockWidgetArea, mFilterDock);
+    mFilterDock->hide();
+}
+
+void MainWindow::toggleDisplayFilterWindow()
+{
+    if (mFilterDock->isVisible())
+    {
+        mFilterDock->hide();
+        mFilterWidget->lineEdit()->setText(QString());
+    }
+    else
+    {
+        mFilterDock->show();
+        mFilterWidget->lineEdit()->setFocus(Qt::OtherFocusReason);
+    }
+}
+
+void MainWindow::setCaseSensitiveFiltering(int checkState)
+{
+    Qt::CaseSensitivity sensitivity;
+    if(checkState == Qt::Checked)
+    {
+        sensitivity = Qt::CaseSensitive;
+    }
+    else
+    {
+        sensitivity = Qt::CaseInsensitive;
+    }
+    foreach( List * l, mLists )
+    {
+        l->proxy->setFilterCaseSensitivity(sensitivity);
+    }
+}
+
+void MainWindow::checkForNoMatches()
+{
+    int count = 0;
+    foreach( List * l, mLists )
+    {
+        if( l->view->isVisible() )
+        {
+            count += l->proxy->rowCount();
+        }
+    }
+    if( count == 0 )
+    {
+        mFilterWidget->lineEdit()->setStyleSheet("background-color: pink;");
+    }
+    else
+    {
+        mFilterWidget->lineEdit()->setStyleSheet("background-color: white;");
     }
 }
