@@ -455,4 +455,13 @@ void MainWindow::itemChanged(QStandardItem *item)
     {
         item->setData( item->text() , MainWindow::Label );
     }
+
+    if( item->text().isEmpty() )
+    {
+        QStandardItemModel * model = item->model();
+        if( model != nullptr )
+        {
+            model->removeRow( item->row() );
+        }
+    }
 }

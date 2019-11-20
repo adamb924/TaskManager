@@ -280,6 +280,7 @@ void ListView::insert(QUrl url)
     ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
     QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
     QStandardItem *item = MainWindow::newItem(false, "", QDateTime::currentDateTime());
+    item->setData(tr("it's a bit hackish, but having text here helps prompt the itemChanged signal, and this text never seems to be displayed"), Qt::DisplayRole);
     if( !url.isEmpty() )
     {
         item->setData( url, MainWindow::Url );
