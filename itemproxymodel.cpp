@@ -24,28 +24,7 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
 
   if( role == Qt::ForegroundRole )
   {
-      if( !url.isEmpty() )
-      {
-          if( url.isLocalFile() )
-          {
-              return QBrush(QColor(Qt::darkBlue));
-          }
-          else
-          {
-              return QBrush(QColor(Qt::blue));
-          }
-      }
-      else
-      {
-          if( putOnHold )
-          {
-              return QBrush(QColor(Qt::darkGray));
-          }
-          else
-          {
-              return QSortFilterProxyModel::data(index, role);
-          }
-      }
+      return getItemColor( item );
   }
   else if( role == Qt::FontRole )
   {
@@ -91,4 +70,26 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
 void ItemProxyModel::setDateTimeFormat(const QString &date)
 {
     mDateFormat = date;
+}
+
+QBrush ItemProxyModel::getItemColor(const QStandardItem * item) const
+{
+    QUrl url = item->data(MainWindow::Url).toUrl();
+    bool putOnHold = item->data(MainWindow::PutOnHold).toBool();
+
+    QColor color = putOnHold ? QColor(Qt::darkGray) : QColor(Qt::black);
+
+    if( !url.isEmpty() ) /// this is a link
+    {
+        if( url.isLocalFile() )
+        {
+            color = putOnHold ? QColor(Qt::blue).lighter() : QColor(Qt::darkBlue);
+        }
+        else
+        {
+            color = putOnHold ? QColor(Qt::blue).lighter() : QColor(Qt::blue);
+        }
+    }
+
+    return QBrush(color);
 }

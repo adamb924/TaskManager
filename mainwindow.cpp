@@ -6,6 +6,8 @@
 #include "itemproxymodel.h"
 #include "list.h"
 #include "filterwidget.h"
+#include "eventitemmodel.h"
+#include "event.h"
 
 #include <QtWidgets>
 #include <QAbstractItemModel>
@@ -64,6 +66,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     readXmlData();
 
+    mEventModel = new EventItemModel(&mEvents);
+    ui->eventsView->setEventModel(mEventModel);
+
     propagateDateTime();
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this, SLOT(toggleDisplayFilterWindow()));
@@ -72,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     qDeleteAll( mLists );
+    qDeleteAll( mEvents );
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -131,6 +137,15 @@ void MainWindow::serializeItem(List *list, QStandardItem *item, QXmlStreamWriter
     stream->writeEndElement(); // task
 }
 
+void MainWindow::serializeEvent(Event *e, QXmlStreamWriter *stream) const
+{
+    stream->writeStartElement("event");
+    stream->writeAttribute("label", e->label());
+    stream->writeAttribute("time", e->dateTime().toString(Qt::ISODate) );
+    stream->writeAttribute("completed", e->completed() ? "true" : "false");
+    stream->writeEndElement(); // event
+}
+
 bool MainWindow::writeXmlData(QString path )
 {
     if( path.isEmpty() )
@@ -159,6 +174,14 @@ bool MainWindow::writeXmlData(QString path )
         serializeModel( l, &stream);
         stream.writeEndElement();
     }
+
+    // write the events
+    stream.writeStartElement("events");
+    foreach(Event * e, mEvents)
+    {
+        serializeEvent(e, &stream);
+    }
+    stream.writeEndElement(); // events
 
     stream.writeEndElement(); // task-manager
     stream.writeEndDocument();
@@ -286,6 +309,20 @@ void MainWindow::readXmlData(QString path )
                     currentItem.top()->appendRow( item );
                 }
                 currentItem.push(item);
+            }
+            else if( name == "event" )
+            {
+                Event * e = new Event;
+                if( attributes.hasAttribute("time") ) {
+                    e->setDateTime( QDateTime::fromString(attributes.value("time").toString(), Qt::ISODate ) );
+                }
+                if( attributes.hasAttribute("label") ) {
+                    e->setLabel( attributes.value("label").toString() );
+                }
+                if( attributes.hasAttribute("completed") ) {
+                    e->setCompleted( attributes.value("completed").toString() == "true" );
+                }
+                mEvents.append(e);
             }
         }
         else if( stream.tokenType() == QXmlStreamReader::EndElement )

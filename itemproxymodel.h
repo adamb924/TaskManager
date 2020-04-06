@@ -3,6 +3,8 @@
 
 #include <QSortFilterProxyModel>
 
+class QStandardItem;
+
 class ItemProxyModel : public  QSortFilterProxyModel
 {
     Q_OBJECT
@@ -14,6 +16,8 @@ public:
     void setDateTimeFormat(const QString & date);
 
 private:
+    QBrush getItemColor(const QStandardItem *item) const;
+
     QString mDateFormat;
 };
 

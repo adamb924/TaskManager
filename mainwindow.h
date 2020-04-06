@@ -15,6 +15,8 @@ class QTreeView;
 class ItemProxyModel;
 class List;
 class FilterWidget;
+class Event;
+class EventItemModel;
 
 namespace Ui {
     class MainWindow;
@@ -66,9 +68,13 @@ private:
 
     QHash<MainWindow::ListType, List*> mLists;
 
+    QList<Event*> mEvents;
+    EventItemModel * mEventModel;
+
     void closeEvent(QCloseEvent *event);
     void serializeModel(List * list, QXmlStreamWriter *stream) const;
     void serializeItem(List * list, QStandardItem * item, QXmlStreamWriter *stream) const;
+    void serializeEvent(Event * e, QXmlStreamWriter *stream) const;
     void propagateDateTime();
     void readXmlData(QString path = QString());
     QString dataFileReadPath() const;
