@@ -11,6 +11,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
+    event.cpp \
+    eventeditdialog.cpp \
+    eventitemmodel.cpp \
+    eventview.cpp \
     filterwidget.cpp \
     itemproxymodel.cpp \
     linkeditdialog.cpp \
@@ -19,6 +23,10 @@ SOURCES += main.cpp\
     listview.cpp
 
 HEADERS  += mainwindow.h \
+    event.h \
+    eventeditdialog.h \
+    eventitemmodel.h \
+    eventview.h \
     filterwidget.h \
     itemproxymodel.h \
     linkeditdialog.h \
@@ -26,6 +34,7 @@ HEADERS  += mainwindow.h \
     listview.h
 
 FORMS += \
+    eventeditdialog.ui \
     filterwidget.ui \
     linkeditdialog.ui \
     mainwindow.ui \
