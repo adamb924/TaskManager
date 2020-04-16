@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>765</width>
-    <height>254</height>
+    <width>524</width>
+    <height>286</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -72,13 +72,6 @@
      <item row="4" column="1">
       <widget class="QLineEdit" name="date"/>
      </item>
-     <item row="5" column="1">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>(e.g., ddd MMMM d yy becomes Sun July 20 69;  hh:mm:ss.zzz becomes 14:13:09.042)</string>
-       </property>
-      </widget>
-     </item>
      <item row="5" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
@@ -86,23 +79,37 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
+     <item row="5" column="1">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>(e.g., ddd MMMM d yy becomes Sun July 20 69;  hh:mm:ss.zzz becomes 14:13:09.042)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Event Groupings</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="7" column="1">
       <widget class="QLineEdit" name="eventGroupingsEdit"/>
      </item>
-     <item row="7" column="1">
+     <item row="8" column="1">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>(e.g., &quot;7,14&quot; produces separate lists from the next seven days, then the fourteen days after that, and then everything else. Leave it blank if you don't want to break up events like that. Takes effect after the application is restarted.)</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0" colspan="2">
+      <widget class="QCheckBox" name="showEventsCheckBox">
+       <property name="text">
+        <string>Show event list</string>
        </property>
       </widget>
      </item>

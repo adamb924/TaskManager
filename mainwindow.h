@@ -75,6 +75,8 @@ private:
     EventItemModel * mEventModel;
     QList<EventView*> mEventViews;
 
+    bool mShowEvents;
+
     void closeEvent(QCloseEvent *event);
     void serializeModel(List * list, QXmlStreamWriter *stream) const;
     void serializeItem(List * list, QStandardItem * item, QXmlStreamWriter *stream) const;

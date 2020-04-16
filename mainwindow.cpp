@@ -22,7 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
       archiveUi(new Ui::Archive),
-      mDateFormat("MM/dd/yyyy")
+      mDateFormat("MM/dd/yyyy"),
+      mShowEvents(true)
 {
     ui->setupUi(this);
 
@@ -79,6 +80,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     /// NB: only use the settings info once the splitters are set up
     ui->eventSplitter->restoreState( settings.value("eventSplitterSizes").toByteArray() );
+
+    if( !mShowEvents )
+    {
+        ui->eventWidget->hide();
+    }
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this, SLOT(toggleDisplayFilterWindow()));
 }
@@ -179,6 +185,7 @@ bool MainWindow::writeXmlData(QString path )
     stream.writeTextElement("ll-label", ui->ll->text() );
     stream.writeTextElement("lr-label", ui->lr->text() );
     stream.writeTextElement("date-format", mDateFormat );
+    stream.writeTextElement("show-events", mShowEvents ? "true" : "false" );
     stream.writeTextElement("event-divisions", eventDivisionsString() );
 
     foreach( List * l, mLists )
@@ -254,6 +261,10 @@ void MainWindow::readXmlData(QString path )
             {
                 mDateFormat = stream.readElementText();
                 propagateDateTime();
+            }
+            else if( name == "show-events" )
+            {
+                mShowEvents = stream.readElementText() == "true";
             }
             else if( name == "event-divisions" )
             {
@@ -492,6 +503,7 @@ void MainWindow::preferences()
     preferencesUi->ll->setText( ui->ll->text() );
     preferencesUi->lr->setText( ui->lr->text() );
     preferencesUi->date->setText( mDateFormat );
+    preferencesUi->showEventsCheckBox->setChecked(mShowEvents);
 
     preferencesUi->eventGroupingsEdit->setText( eventDivisionsString() );
     preferencesUi->eventGroupingsEdit->setValidator( new QRegularExpressionValidator( QRegularExpression("(\\d+\\s*,\\s*)*"), this) );
@@ -507,6 +519,9 @@ void MainWindow::preferences()
         propagateDateTime();
 
         setEventDivisionsFromString( preferencesUi->eventGroupingsEdit->text() );
+
+        mShowEvents = preferencesUi->showEventsCheckBox->isChecked();
+        ui->eventWidget->setVisible( mShowEvents );
     }
 }
 
