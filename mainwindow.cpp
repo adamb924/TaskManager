@@ -66,6 +66,9 @@ MainWindow::MainWindow(QWidget *parent)
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
 
+    ui->splitter->restoreState( settings.value("mainSplitterSizes").toByteArray() );
+    ui->taskSplitter->restoreState( settings.value("taskSplitterSizes").toByteArray() );
+
     readXmlData();
 
     mEventModel = new EventItemModel(&mEvents);
@@ -75,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupEventSplitters();
 
     /// NB: only use the settings info once the splitters are set up
-    ui->eventSplitter->restoreState( settings.value("splitterSizes").toByteArray() );
+    ui->eventSplitter->restoreState( settings.value("eventSplitterSizes").toByteArray() );
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this, SLOT(toggleDisplayFilterWindow()));
 }
@@ -99,7 +102,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QSettings settings("AdamBaker", "TaskManager");
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
-    settings.setValue("splitterSizes", ui->eventSplitter->saveState());
+    settings.setValue("mainSplitterSizes", ui->splitter->saveState());
+    settings.setValue("taskSplitterSizes", ui->taskSplitter->saveState());
+    settings.setValue("eventSplitterSizes", ui->eventSplitter->saveState());
 }
 
 void MainWindow::serializeModel(List * list, QXmlStreamWriter *stream) const
