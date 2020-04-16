@@ -21,6 +21,11 @@ bool Event::operator>=(const Event &other) const
     return mDateTime >= other.mDateTime;
 }
 
+bool Event::pointerComparison(const Event *a, const Event *b)
+{
+    return *a < *b;
+}
+
 QString Event::label() const
 {
     return mLabel;

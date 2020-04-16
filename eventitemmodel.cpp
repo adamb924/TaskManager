@@ -236,16 +236,7 @@ void EventItemModel::updateQuickAccessData()
     foreach(QDate d, mDates)
     {
         QList<Event*> list = hash.values( d );
-        std::sort( list.rbegin(), list.rend()  );
-
-        qDebug() << list;
-        foreach( Event * e, list ) {
-            qDebug() << *e;
-        }
-
+        std::sort( list.begin(), list.end(), Event::pointerComparison );
         mData[ d ] = list;
     }
-
-//    qDebug() << mDates;
-//    qDebug() << mData;
 }

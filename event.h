@@ -12,6 +12,7 @@ public:
 
     bool operator<(const Event & other) const;
     bool operator>=(const Event & other) const;
+    static bool pointerComparison(const Event * a, const Event * b);
 
     QString label() const;
     void setLabel(const QString &label);
