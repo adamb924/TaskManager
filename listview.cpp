@@ -66,7 +66,7 @@ void ListView::contextMenuEvent(QContextMenuEvent *e)
 
     QMenu * applicationMenu = new QMenu(tr("Application"), this);
     applicationMenu->addAction(tr("Show the archive"), this,SIGNAL(showArchive()) );
-    applicationMenu->addAction(tr("Preferences"), this,SIGNAL(preferences()) );
+    applicationMenu->addAction(tr("Preferences..."), this,SIGNAL(preferences()) );
 
     applicationMenu->addSeparator();
     applicationMenu->addAction(tr("Open..."), this, SIGNAL(openFile()));
