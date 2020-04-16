@@ -8,6 +8,8 @@
 #include "filterwidget.h"
 #include "eventitemmodel.h"
 #include "event.h"
+#include "eventview.h"
+#include "eventdayfilter.h"
 
 #include <QtWidgets>
 #include <QAbstractItemModel>
@@ -67,9 +69,13 @@ MainWindow::MainWindow(QWidget *parent)
     readXmlData();
 
     mEventModel = new EventItemModel(&mEvents);
-    ui->eventsView->setEventModel(mEventModel);
 
     propagateDateTime();
+
+    setupEventSplitters();
+
+    /// NB: only use the settings info once the splitters are set up
+    ui->eventSplitter->restoreState( settings.value("splitterSizes").toByteArray() );
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this, SLOT(toggleDisplayFilterWindow()));
 }
@@ -93,6 +99,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QSettings settings("AdamBaker", "TaskManager");
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
+    settings.setValue("splitterSizes", ui->eventSplitter->saveState());
 }
 
 void MainWindow::serializeModel(List * list, QXmlStreamWriter *stream) const
@@ -167,6 +174,7 @@ bool MainWindow::writeXmlData(QString path )
     stream.writeTextElement("ll-label", ui->ll->text() );
     stream.writeTextElement("lr-label", ui->lr->text() );
     stream.writeTextElement("date-format", mDateFormat );
+    stream.writeTextElement("event-divisions", eventDivisionsString() );
 
     foreach( List * l, mLists )
     {
@@ -241,6 +249,10 @@ void MainWindow::readXmlData(QString path )
             {
                 mDateFormat = stream.readElementText();
                 propagateDateTime();
+            }
+            else if( name == "event-divisions" )
+            {
+                setEventDivisionsFromString( stream.readElementText() );
             }
             else if( name == "urgent-important" )
             {
@@ -371,6 +383,64 @@ void MainWindow::cleanUpOldCopies()
     }
 }
 
+QString MainWindow::eventDivisionsString() const
+{
+    QString string;
+    QListIterator<int> i(mEventDivisions);
+    while( i.hasNext() )
+    {
+        string.append( QString("%1").arg(i.next()) );
+        if( i.hasNext() )
+        {
+            string.append( "," );
+        }
+    }
+    return string;
+}
+
+void MainWindow::setEventDivisionsFromString(const QString &string)
+{
+    mEventDivisions.clear();
+    QStringList list = string.split( QRegularExpression("\\s*,\\s*") );
+    foreach(QString item, list)
+    {
+        bool ok;
+        int number = item.toInt(&ok);
+        if( ok )
+        {
+            mEventDivisions << number;
+        }
+    }
+}
+
+void MainWindow::setupEventSplitters()
+{
+    /// add a view for each interval the user has specified
+    QDate startDate = QDate::currentDate();
+    foreach(int division, mEventDivisions)
+    {
+        QDate endDate = startDate.addDays( division - 1 );
+
+        EventView *view = new EventView(this);
+        view->setToolTip( tr("%1 through %2").arg( startDate.toString() ).arg( endDate.toString() ) );
+
+        EventDayFilter *proxy = new EventDayFilter(startDate, endDate, this);
+        proxy->setSourceModel(mEventModel);
+        view->setEventModel(proxy);
+        ui->eventSplitter->addWidget(view);
+
+        startDate = endDate.addDays(1);
+    }
+
+    /// add at least one view for remaining events
+    EventView *remainderView = new EventView(this);
+    remainderView->setToolTip( tr("%1 and following").arg( startDate.toString() ) );
+    EventDayFilter *proxy = new EventDayFilter(startDate, QDate(), this);
+    proxy->setSourceModel(mEventModel);
+    remainderView->setEventModel(proxy);
+    ui->eventSplitter->addWidget(remainderView);
+}
+
 QStandardItem *MainWindow::newItem(bool completed, const QString &label, const QDateTime &dateCreated, const QDateTime &dateCompleted, const QUrl &url)
 {
     QStandardItem * item = new QStandardItem();
@@ -417,6 +487,10 @@ void MainWindow::preferences()
     preferencesUi->ll->setText( ui->ll->text() );
     preferencesUi->lr->setText( ui->lr->text() );
     preferencesUi->date->setText( mDateFormat );
+
+    preferencesUi->eventGroupingsEdit->setText( eventDivisionsString() );
+    preferencesUi->eventGroupingsEdit->setValidator( new QRegularExpressionValidator( QRegularExpression("(\\d+\\s*,\\s*)*"), this) );
+
     if( dlg->exec() )
     {
         ui->ul->setText( preferencesUi->ul->text() );
@@ -426,6 +500,8 @@ void MainWindow::preferences()
 
         mDateFormat = preferencesUi->date->text();
         propagateDateTime();
+
+        setEventDivisionsFromString( preferencesUi->eventGroupingsEdit->text() );
     }
 }
 
@@ -581,3 +657,4 @@ void MainWindow::checkForNoMatches()
         mFilterWidget->lineEdit()->setStyleSheet("background-color: white;");
     }
 }
+

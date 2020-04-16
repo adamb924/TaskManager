@@ -15,6 +15,46 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout" columnstretch="2,2,1">
+    <item row="0" column="0">
+     <widget class="QLabel" name="ul">
+      <property name="text">
+       <string>Urgent &amp; Important</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="ur">
+      <property name="text">
+       <string>Urgent, Not Important</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Events</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="ListView" name="urgentImportant">
+      <property name="acceptDrops">
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QTreeView{ border: 3px solid red; }</string>
+      </property>
+      <property name="dragDropMode">
+       <enum>QAbstractItemView::DragDrop</enum>
+      </property>
+      <property name="defaultDropAction">
+       <enum>Qt::MoveAction</enum>
+      </property>
+      <property name="headerHidden">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
     <item row="1" column="1">
      <widget class="ListView" name="urgentNotImportant">
       <property name="acceptDrops">
@@ -31,6 +71,20 @@
       </property>
       <property name="headerHidden">
        <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="ll">
+      <property name="text">
+       <string>Important, Not Urgent</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLabel" name="lr">
+      <property name="text">
+       <string>Follow up at some point</string>
       </property>
      </widget>
     </item>
@@ -78,64 +132,10 @@
       </attribute>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="ur">
-      <property name="text">
-       <string>Urgent, Not Important</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="2">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Events</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="2" rowspan="3">
-     <widget class="EventView" name="eventsView">
-      <property name="headerHidden">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLabel" name="lr">
-      <property name="text">
-       <string>Follow up at some point</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="ListView" name="urgentImportant">
-      <property name="acceptDrops">
-       <bool>true</bool>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QTreeView{ border: 3px solid red; }</string>
-      </property>
-      <property name="dragDropMode">
-       <enum>QAbstractItemView::DragDrop</enum>
-      </property>
-      <property name="defaultDropAction">
-       <enum>Qt::MoveAction</enum>
-      </property>
-      <property name="headerHidden">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="ll">
-      <property name="text">
-       <string>Important, Not Urgent</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="ul">
-      <property name="text">
-       <string>Urgent &amp; Important</string>
+     <widget class="QSplitter" name="eventSplitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
      </widget>
     </item>
@@ -147,11 +147,6 @@
    <class>ListView</class>
    <extends>QTreeView</extends>
    <header>listview.h</header>
-  </customwidget>
-  <customwidget>
-   <class>EventView</class>
-   <extends>QTreeView</extends>
-   <header>eventview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

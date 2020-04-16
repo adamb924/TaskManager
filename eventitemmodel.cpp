@@ -16,8 +16,10 @@ EventItemModel::EventItemModel(QList<Event *> * events, QObject *parent)
 
 void EventItemModel::addEvent(Event *e)
 {
+    beginResetModel();
     mEvents->append(e);
     updateQuickAccessData();
+    endResetModel();
     emit dataChanged( index(0,0,QModelIndex()), index(rowCount(), 1, QModelIndex()) );
 }
 
@@ -210,12 +212,12 @@ bool EventItemModel::removeRow(int row, const QModelIndex &parent)
     {
         return false;
     }
-    beginRemoveRows(parent, row, row);
+    beginResetModel();
     QDate d = mDates.at( parent.row() );
     Event *e = mData.value(d).at(row);
     mEvents->removeOne( e );
     updateQuickAccessData();
-    endRemoveRows();
+    endResetModel();
     return true;
 }
 

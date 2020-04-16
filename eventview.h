@@ -4,6 +4,8 @@
 #include <QTreeView>
 
 class EventItemModel;
+class EventDayFilter;
+class Event;
 
 class EventView : public QTreeView
 {
@@ -11,19 +13,22 @@ class EventView : public QTreeView
 public:
     EventView(QWidget *parent);
 
-    void setEventModel(EventItemModel *m);
+    void setEventModel(QAbstractItemModel *m);
+
+signals:
+    void addEvent(Event * e);
+    void removeEvent(Event * e);
+    void editEvent(Event * e);
 
 private slots:
     void addEvent();
     void editEvent();
     void removeEvent();
     void spanFirstColumns();
+    void onModelReset();
 
 protected:
     void contextMenuEvent(QContextMenuEvent *e);
-
-private:
-    EventItemModel * mModel;
 };
 
 #endif // EVENTVIEW_H

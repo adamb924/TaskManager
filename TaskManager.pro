@@ -12,6 +12,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
     event.cpp \
+    eventdayfilter.cpp \
     eventeditdialog.cpp \
     eventitemmodel.cpp \
     eventview.cpp \
@@ -24,6 +25,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     event.h \
+    eventdayfilter.h \
     eventeditdialog.h \
     eventitemmodel.h \
     eventview.h \

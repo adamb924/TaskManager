@@ -17,6 +17,7 @@ class List;
 class FilterWidget;
 class Event;
 class EventItemModel;
+class EventView;
 
 namespace Ui {
     class MainWindow;
@@ -62,6 +63,8 @@ private:
 
     QString mDateFormat;
 
+    QList<int> mEventDivisions;
+
     QDockWidget *mArchiveDock;
     FilterWidget * mFilterWidget;
     QDockWidget * mFilterDock;
@@ -70,6 +73,7 @@ private:
 
     QList<Event*> mEvents;
     EventItemModel * mEventModel;
+    QList<EventView*> mEventViews;
 
     void closeEvent(QCloseEvent *event);
     void serializeModel(List * list, QXmlStreamWriter *stream) const;
@@ -80,6 +84,11 @@ private:
     QString dataFileReadPath() const;
     QString dataFileWritePath() const;
     void cleanUpOldCopies();
+
+    /// Event divisions
+    QString eventDivisionsString() const;
+    void setEventDivisionsFromString(const QString & string);
+    void setupEventSplitters();
 };
 
 #endif // MAINWINDOW_H

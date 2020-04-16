@@ -6,9 +6,11 @@
 
 #include "eventeditdialog.h"
 #include "eventitemmodel.h"
+#include "eventdayfilter.h"
 
 EventView::EventView(QWidget *parent) : QTreeView(parent)
 {
+    setHeaderHidden(true);
 }
 
 void EventView::addEvent()
@@ -19,12 +21,21 @@ void EventView::addEvent()
     QModelIndexList selection = selectionModel()->selectedIndexes();
     if( selection.count() > 0 )
     {
-        dlg.setDate( mModel->data( selection.first() , EventItemModel::Date ).toDate() );
+        dlg.setDate( model()->data( selection.first() , EventItemModel::Date ).toDate() );
     }
 
     if( dlg.exec() == QDialog::Accepted )
     {
-        mModel->addEvent( dlg.getEvent() );
+        EventDayFilter * proxy = qobject_cast<EventDayFilter*>(model());
+        if( proxy != nullptr )
+        {
+            EventItemModel * model = qobject_cast<EventItemModel*>(proxy->sourceModel());
+            if( model != nullptr )
+            {
+                model->addEvent( dlg.getEvent() );
+            }
+        }
+
     }
 }
 
@@ -49,7 +60,15 @@ void EventView::removeEvent()
     if( selection.count() > 0 )
     {
         QModelIndex index = selection.first(); /// there ought only ever to be one anyway
-        mModel->removeRow(index.row(), index.parent());
+        EventDayFilter * proxy = qobject_cast<EventDayFilter*>(model());
+        if( proxy != nullptr )
+        {
+            EventItemModel * model = qobject_cast<EventItemModel*>(proxy->sourceModel());
+            if( model != nullptr )
+            {
+                model->removeRow( proxy->mapToSource(index).row(), proxy->mapToSource(index).parent() );
+            }
+        }
     }
 }
 
@@ -64,6 +83,12 @@ void EventView::spanFirstColumns()
     setColumnWidth(0, 115 );
 }
 
+void EventView::onModelReset()
+{
+    spanFirstColumns();
+    expandAll();
+}
+
 void EventView::contextMenuEvent(QContextMenuEvent *e)
 {
     QMenu menu;
@@ -71,7 +96,7 @@ void EventView::contextMenuEvent(QContextMenuEvent *e)
     QModelIndex index = indexAt(e->pos());
     EventItemModel::ItemType type = EventItemModel::NoType;
     if( index.isValid() )
-        type = static_cast<EventItemModel::ItemType>(mModel->data(index, EventItemModel::Type).toInt());
+        type = static_cast<EventItemModel::ItemType>(model()->data(index, EventItemModel::Type).toInt());
 
     menu.addAction(tr("Add event..."), this,SLOT(addEvent()) );
     if( type == EventItemModel::EventType )
@@ -83,12 +108,13 @@ void EventView::contextMenuEvent(QContextMenuEvent *e)
     menu.exec(e->globalPos());
 }
 
-void EventView::setEventModel(EventItemModel *m)
+void EventView::setEventModel(QAbstractItemModel *m)
 {
-    mModel = m;
     QTreeView::setModel(m);
-    connect( model(), SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), this, SLOT(spanFirstColumns()));
-    connect( model(), SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), this, SLOT(expandAll()));
+
+    connect( m, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), this, SLOT(spanFirstColumns()));
+    connect( m, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), this, SLOT(expandAll()));
+    connect( m, SIGNAL(modelReset()), this, SLOT(onModelReset()));
 
     /// get things started
     spanFirstColumns();
