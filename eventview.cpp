@@ -4,6 +4,7 @@
 #include <QContextMenuEvent>
 #include <QtDebug>
 
+#include "event.h"
 #include "eventeditdialog.h"
 #include "eventitemmodel.h"
 #include "eventdayfilter.h"
@@ -46,10 +47,15 @@ void EventView::editEvent()
     if( selection.count() > 0 )
     {
         QModelIndex index = selection.first(); /// there ought only ever to be one anyway
-        Event * e = static_cast<Event*>(index.internalPointer());
 
-        EventEditDialog dlg(e, this);
-        dlg.exec();
+        EventDayFilter * proxy = qobject_cast<EventDayFilter*>(model());
+        if( proxy != nullptr )
+        {
+            QModelIndex remapped = proxy->mapToSource( index );
+            Event * e = static_cast<Event*>(remapped.internalPointer());
+            EventEditDialog dlg(e, this);
+            dlg.exec();
+        }
     }
 }
 
