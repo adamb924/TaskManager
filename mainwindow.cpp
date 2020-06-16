@@ -432,6 +432,7 @@ void MainWindow::setEventDivisionsFromString(const QString &string)
 void MainWindow::setupEventSplitters()
 {
     /// add a view for each interval the user has specified
+    bool first = true; /// display incomplete events in the first list
     QDate startDate = QDate::currentDate();
     foreach(int division, mEventDivisions)
     {
@@ -440,18 +441,19 @@ void MainWindow::setupEventSplitters()
         EventView *view = new EventView(this);
         view->setToolTip( tr("%1 through %2").arg( startDate.toString() ).arg( endDate.toString() ) );
 
-        EventDayFilter *proxy = new EventDayFilter(startDate, endDate, this);
+        EventDayFilter *proxy = new EventDayFilter(startDate, endDate, first, this);
         proxy->setSourceModel(mEventModel);
         view->setEventModel(proxy);
         ui->eventSplitter->addWidget(view);
 
         startDate = endDate.addDays(1);
+        first = false;
     }
 
     /// add at least one view for remaining events
     EventView *remainderView = new EventView(this);
     remainderView->setToolTip( tr("%1 and following").arg( startDate.toString() ) );
-    EventDayFilter *proxy = new EventDayFilter(startDate, QDate(), this);
+    EventDayFilter *proxy = new EventDayFilter(startDate, QDate(), false, this);
     proxy->setSourceModel(mEventModel);
     remainderView->setEventModel(proxy);
     ui->eventSplitter->addWidget(remainderView);
