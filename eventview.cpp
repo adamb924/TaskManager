@@ -54,7 +54,13 @@ void EventView::editEvent()
             QModelIndex remapped = proxy->mapToSource( index );
             Event * e = static_cast<Event*>(remapped.internalPointer());
             EventEditDialog dlg(e, this);
-            dlg.exec();
+            if( dlg.exec() )
+            {
+                /// this is terrible; the event pointer is already updated,
+                /// I just call the model's setData() method to call the
+                /// necessary update functions
+                model()->setData( index, dlg.getEvent()->label() );
+            }
         }
     }
 }

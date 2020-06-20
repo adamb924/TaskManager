@@ -183,6 +183,7 @@ bool EventItemModel::setData(const QModelIndex &index, const QVariant &value, in
     }
     else
     {
+        emit beginResetModel();
         Event * e = static_cast<Event*>( index.internalPointer() );
         if( index.column() == 0 ) /// time
         {
@@ -202,6 +203,8 @@ bool EventItemModel::setData(const QModelIndex &index, const QVariant &value, in
                 return true;
             }
         }
+        updateQuickAccessData();
+        emit endResetModel();
     }
     return false;
 }
