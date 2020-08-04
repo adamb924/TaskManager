@@ -33,7 +33,7 @@ void EventView::addEvent()
             EventItemModel * model = qobject_cast<EventItemModel*>(proxy->sourceModel());
             if( model != nullptr )
             {
-                model->addEvent( dlg.getEvent() );
+                model->addEvent( new Event( dlg.getEvent() ) );
             }
         }
 
@@ -53,13 +53,13 @@ void EventView::editEvent()
         {
             QModelIndex remapped = proxy->mapToSource( index );
             Event * e = static_cast<Event*>(remapped.internalPointer());
-            EventEditDialog dlg(e, this);
+            EventEditDialog dlg( *e, this);
             if( dlg.exec() )
             {
-                /// this is terrible; the event pointer is already updated,
+                /// TODO this is terrible; the event pointer is already updated,
                 /// I just call the model's setData() method to call the
                 /// necessary update functions
-                model()->setData( index, dlg.getEvent()->label() );
+                model()->setData( index, dlg.getEvent().label() );
             }
         }
     }

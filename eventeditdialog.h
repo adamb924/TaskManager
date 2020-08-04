@@ -7,7 +7,7 @@ namespace Ui {
 class EventEditDialog;
 }
 
-class Event;
+#include "event.h"
 
 class EventEditDialog : public QDialog
 {
@@ -15,12 +15,13 @@ class EventEditDialog : public QDialog
 
 public:
     explicit EventEditDialog(QWidget *parent = nullptr);
-    EventEditDialog(Event * event, QWidget *parent = nullptr);
+    EventEditDialog(Event event, QWidget *parent = nullptr);
     ~EventEditDialog();
 
-    Event * getEvent();
+    Event getEvent();
 
     void setDate(const QDate & date);
+
 
 private slots:
     void setEventData();
@@ -28,7 +29,7 @@ private slots:
 private:
     Ui::EventEditDialog *ui;
 
-    Event * mEvent;
+    Event mEvent;
 };
 
 #endif // EVENTEDITDIALOG_H
