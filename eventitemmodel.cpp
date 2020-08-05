@@ -191,7 +191,6 @@ bool EventItemModel::setData(const QModelIndex &index, const QVariant &value, in
             {
                 e->setCompleted( value.toInt() == Qt::Checked );
                 emit dataChanged(index, index, QVector<int>() << role );
-                return true;
             }
         }
         else if ( index.column() == 1 ) /// label
@@ -200,13 +199,12 @@ bool EventItemModel::setData(const QModelIndex &index, const QVariant &value, in
             {
                 e->setLabel( value.toString() );
                 emit dataChanged(index, index, QVector<int>() << role );
-                return true;
             }
         }
         updateQuickAccessData();
         emit endResetModel();
+        return true;
     }
-    return false;
 }
 
 bool EventItemModel::removeRow(int row, const QModelIndex &parent)
