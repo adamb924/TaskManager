@@ -582,14 +582,12 @@ void MainWindow::itemChanged(QStandardItem *item)
     if( !justChanged && checked )
     {
         item->setData( true , MainWindow::JustChanged );
-        item->setData( true, Qt::CheckStateRole );
         item->setData( QDateTime::currentDateTime() , MainWindow::DateCompleted );
         item->setData( item->text() , MainWindow::Label );
     }
     else if ( justChanged && !checked )
     {
         item->setData( false , MainWindow::JustChanged );
-        item->setData( false, Qt::CheckStateRole );
         item->setData(  QDateTime() , MainWindow::DateCompleted );
         item->setData( item->text() , MainWindow::Label );
     }
