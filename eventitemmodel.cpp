@@ -230,7 +230,7 @@ void EventItemModel::updateQuickAccessData()
     foreach(Event * e, *mEvents)
     {
         if( ! e->completed() || e->date() >= today )
-            hash.insertMulti( e->date(), e);
+            hash.insert( e->date(), e);
     }
 
     mDates = hash.uniqueKeys();
