@@ -59,6 +59,7 @@ void EventView::editEvent()
                 /// TODO this is terrible; the event pointer is already updated,
                 /// I just call the model's setData() method to call the
                 /// necessary update functions
+                *e = dlg.getEvent(); /// make sure all the data are copied
                 model()->setData( index, dlg.getEvent().label() );
             }
         }
