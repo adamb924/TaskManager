@@ -99,7 +99,7 @@ MainWindow::MainWindow(QWidget *parent)
         ui->macrotaskListView->hide();
     }
 
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this, SLOT(toggleDisplayFilterWindow()));
+    new QShortcut(QKeySequence(tr("Ctrl+F")), this, SLOT(toggleDisplayFilterWindow()));
 }
 
 MainWindow::~MainWindow()
