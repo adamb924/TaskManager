@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>524</width>
-    <height>286</height>
+    <width>563</width>
+    <height>362</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,81 +22,81 @@
      <property name="labelAlignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
-     <item row="0" column="0">
+     <item row="1" column="0">
       <widget class="QLabel" name="upperLeftLabelLabel">
        <property name="text">
         <string>Upper left label</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="1" column="1">
       <widget class="QLineEdit" name="ul"/>
      </item>
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="upperRightLabelLabel">
        <property name="text">
         <string>Upper right label</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QLineEdit" name="ur"/>
      </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="lowerLeftLabelLabel">
        <property name="text">
         <string>Lower left label</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QLineEdit" name="ll"/>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="lowerRightLabelLabel">
        <property name="text">
         <string>Lower right label</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
       <widget class="QLineEdit" name="lr"/>
      </item>
-     <item row="4" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="dateFormatEGDddMMMMDYyBecomesSunJuly2069Label">
        <property name="text">
         <string>Date format </string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="6" column="1">
       <widget class="QLineEdit" name="date"/>
      </item>
-     <item row="5" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string/>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="7" column="1">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>(e.g., ddd MMMM d yy becomes Sun July 20 69;  hh:mm:ss.zzz becomes 14:13:09.042)</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="0">
+     <item row="10" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Event Groupings</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
+     <item row="10" column="1">
       <widget class="QLineEdit" name="eventGroupingsEdit"/>
      </item>
-     <item row="8" column="1">
+     <item row="11" column="1">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>(e.g., &quot;7,14&quot; produces separate lists from the next seven days, then the fourteen days after that, and then everything else. Leave it blank if you don't want to break up events like that. Takes effect after the application is restarted.)</string>
@@ -106,10 +106,17 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="0" colspan="2">
+     <item row="5" column="0" colspan="2">
       <widget class="QCheckBox" name="showEventsCheckBox">
        <property name="text">
         <string>Show event list</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="0" colspan="2">
+      <widget class="QCheckBox" name="showMacrotasksCheckBox">
+       <property name="text">
+        <string>Show macrotask list</string>
        </property>
       </widget>
      </item>

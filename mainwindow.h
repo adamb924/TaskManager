@@ -7,6 +7,8 @@
 #include <QDir>
 #include <QUrl>
 
+#include "macrotasks/macrotask.h"
+
 class QDialog;
 class QDockWidget;
 class QLabel;
@@ -18,6 +20,7 @@ class FilterWidget;
 class Event;
 class EventItemModel;
 class EventView;
+class MacrotaskListModel;
 
 namespace Ui {
     class MainWindow;
@@ -75,12 +78,17 @@ private:
     EventItemModel * mEventModel;
     QList<EventView*> mEventViews;
 
+    MacrotaskListModel * mMacrotaskModel;
+    QList<Macrotask> mMacrotasks;
+
     bool mShowEvents;
+    bool mShowMacrotasks;
 
     void closeEvent(QCloseEvent *event);
     void serializeModel(List * list, QXmlStreamWriter *stream) const;
     void serializeItem(List * list, QStandardItem * item, QXmlStreamWriter *stream) const;
     void serializeEvent(Event * e, QXmlStreamWriter *stream) const;
+    void serializeMacrotask(const Macrotask & m, QXmlStreamWriter *stream) const;
     void propagateDateTime();
     void readXmlData(QString path = QString());
     QString dataFileReadPath() const;

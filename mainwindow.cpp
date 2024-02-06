@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "macrotasks/macrotaskitemdelegate.h"
 #include "ui_mainwindow.h"
 #include "ui_archive.h"
 #include "ui_preferencesdialog.h"
@@ -10,6 +11,7 @@
 #include "events/event.h"
 #include "events/eventview.h"
 #include "events/eventdayfilter.h"
+#include "macrotasks/macrotasklistmodel.h"
 
 #include <QtWidgets>
 #include <QAbstractItemModel>
@@ -23,7 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
       ui(new Ui::MainWindow),
       archiveUi(new Ui::Archive),
       mDateFormat("MM/dd/yyyy"),
-      mShowEvents(true)
+      mShowEvents(true),
+    mShowMacrotasks(true)
 {
     ui->setupUi(this);
 
@@ -67,12 +70,17 @@ MainWindow::MainWindow(QWidget *parent)
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
 
-    ui->splitter->restoreState( settings.value("mainSplitterSizes").toByteArray() );
+    ui->taskEventSplitter->restoreState( settings.value("mainSplitterSizes").toByteArray() );
     ui->taskSplitter->restoreState( settings.value("taskSplitterSizes").toByteArray() );
+    ui->macroTaskSplitter->restoreState( settings.value("macrotaskSplitterSizes").toByteArray() );
 
     readXmlData();
 
     mEventModel = new EventItemModel(&mEvents);
+
+    ui->macrotaskListView->setItemDelegate(new MacrotaskItemDelegate(this));
+    mMacrotaskModel = new MacrotaskListModel(&mMacrotasks);
+    ui->macrotaskListView->setModel(mMacrotaskModel);
 
     propagateDateTime();
 
@@ -84,6 +92,11 @@ MainWindow::MainWindow(QWidget *parent)
     if( !mShowEvents )
     {
         ui->eventWidget->hide();
+    }
+
+    if( !mShowMacrotasks )
+    {
+        ui->macrotaskListView->hide();
     }
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this, SLOT(toggleDisplayFilterWindow()));
@@ -108,9 +121,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QSettings settings("AdamBaker", "TaskManager");
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
-    settings.setValue("mainSplitterSizes", ui->splitter->saveState());
+    settings.setValue("mainSplitterSizes", ui->taskEventSplitter->saveState());
     settings.setValue("taskSplitterSizes", ui->taskSplitter->saveState());
     settings.setValue("eventSplitterSizes", ui->eventSplitter->saveState());
+    settings.setValue("macrotaskSplitterSizes", ui->macroTaskSplitter->saveState());
 }
 
 void MainWindow::serializeModel(List * list, QXmlStreamWriter *stream) const
@@ -164,6 +178,14 @@ void MainWindow::serializeEvent(Event *e, QXmlStreamWriter *stream) const
     stream->writeEndElement(); // event
 }
 
+void MainWindow::serializeMacrotask(const Macrotask &m, QXmlStreamWriter *stream) const
+{
+    stream->writeStartElement("macrotask");
+    stream->writeAttribute("header", m.header() );
+    stream->writeCharacters(m.description());
+    stream->writeEndElement(); // macrotask
+}
+
 bool MainWindow::writeXmlData(QString path )
 {
     if( path.isEmpty() )
@@ -186,6 +208,7 @@ bool MainWindow::writeXmlData(QString path )
     stream.writeTextElement("lr-label", ui->lr->text() );
     stream.writeTextElement("date-format", mDateFormat );
     stream.writeTextElement("show-events", mShowEvents ? "true" : "false" );
+    stream.writeTextElement("show-macrotasks", mShowMacrotasks ? "true" : "false" );
     stream.writeTextElement("event-divisions", eventDivisionsString() );
 
     foreach( List * l, mLists )
@@ -202,6 +225,14 @@ bool MainWindow::writeXmlData(QString path )
         serializeEvent(e, &stream);
     }
     stream.writeEndElement(); // events
+
+    // write the macrotasks
+    stream.writeStartElement("macrotasks");
+    foreach(Macrotask t, mMacrotasks)
+    {
+        serializeMacrotask(t, &stream);
+    }
+    stream.writeEndElement(); // macrotasks
 
     stream.writeEndElement(); // task-manager
     stream.writeEndDocument();
@@ -265,6 +296,10 @@ void MainWindow::readXmlData(QString path )
             else if( name == "show-events" )
             {
                 mShowEvents = stream.readElementText() == "true";
+            }
+            else if( name == "show-macrotasks" )
+            {
+                mShowMacrotasks = stream.readElementText() == "true";
             }
             else if( name == "event-divisions" )
             {
@@ -351,6 +386,15 @@ void MainWindow::readXmlData(QString path )
                     e->setCompleted( attributes.value("completed").toString() == "true" );
                 }
                 mEvents.append(e);
+            }
+            else if( name == "macrotask" )
+            {
+                Macrotask task;
+                if( attributes.hasAttribute("header") ) {
+                    task.setHeader( attributes.value("header").toString() );
+                }
+                task.setDescription( stream.readElementText() );
+                mMacrotasks << task;
             }
         }
         else if( stream.tokenType() == QXmlStreamReader::EndElement )
@@ -506,6 +550,7 @@ void MainWindow::preferences()
     preferencesUi->lr->setText( ui->lr->text() );
     preferencesUi->date->setText( mDateFormat );
     preferencesUi->showEventsCheckBox->setChecked(mShowEvents);
+    preferencesUi->showMacrotasksCheckBox->setChecked(mShowMacrotasks);
 
     preferencesUi->eventGroupingsEdit->setText( eventDivisionsString() );
     preferencesUi->eventGroupingsEdit->setValidator( new QRegularExpressionValidator( QRegularExpression("(\\d+\\s*,\\s*)*"), this) );
@@ -523,7 +568,9 @@ void MainWindow::preferences()
         setEventDivisionsFromString( preferencesUi->eventGroupingsEdit->text() );
 
         mShowEvents = preferencesUi->showEventsCheckBox->isChecked();
+        mShowMacrotasks = preferencesUi->showMacrotasksCheckBox->isChecked();
         ui->eventWidget->setVisible( mShowEvents );
+        ui->macrotaskListView->setVisible( mShowMacrotasks );
     }
 }
 

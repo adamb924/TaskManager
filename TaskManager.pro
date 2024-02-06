@@ -3,6 +3,8 @@ QT       += core gui widgets
 TARGET = TaskManager
 TEMPLATE = app
 
+INCLUDEPATH += tasks/
+INCLUDEPATH += macrotasks/
 
 SOURCES += main.cpp\
     events/event.cpp \
@@ -10,6 +12,11 @@ SOURCES += main.cpp\
     events/eventeditdialog.cpp \
     events/eventitemmodel.cpp \
     events/eventview.cpp \
+    macrotasks/macrotask.cpp \
+    macrotasks/macrotaskdialog.cpp \
+    macrotasks/macrotaskitemdelegate.cpp \
+    macrotasks/macrotasklistmodel.cpp \
+    macrotasks/macrotaskview.cpp \
     tasks/filterwidget.cpp \
     tasks/itemproxymodel.cpp \
     tasks/linkeditdialog.cpp \
@@ -23,6 +30,11 @@ HEADERS  += mainwindow.h \
     events/eventeditdialog.h \
     events/eventitemmodel.h \
     events/eventview.h \
+    macrotasks/macrotask.h \
+    macrotasks/macrotaskdialog.h \
+    macrotasks/macrotaskitemdelegate.h \
+    macrotasks/macrotasklistmodel.h \
+    macrotasks/macrotaskview.h \
     tasks/filterwidget.h \
     tasks/itemproxymodel.h \
     tasks/linkeditdialog.h \
@@ -31,6 +43,7 @@ HEADERS  += mainwindow.h \
 
 FORMS += \
     events/eventeditdialog.ui \
+    macrotasks/macrotaskdialog.ui \
     tasks/filterwidget.ui \
     tasks/linkeditdialog.ui \
     mainwindow.ui \
