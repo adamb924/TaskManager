@@ -12,7 +12,7 @@ class ItemProxyModel : public  QSortFilterProxyModel
 public:
     ItemProxyModel();
 
-    QVariant data(const QModelIndex &index, int role) const;
+    QVariant data(const QModelIndex &index, int role) const override;
     void setDateTimeFormat(const QString & date);
 
 private:

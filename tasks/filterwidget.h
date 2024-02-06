@@ -15,7 +15,7 @@ class FilterWidget : public QWidget
 
 public:
     explicit FilterWidget(QWidget *parent = nullptr);
-    ~FilterWidget();
+    ~FilterWidget() override;
 
     QLineEdit * lineEdit();
 

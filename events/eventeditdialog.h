@@ -16,7 +16,7 @@ class EventEditDialog : public QDialog
 public:
     explicit EventEditDialog(QWidget *parent = nullptr);
     EventEditDialog(Event event, QWidget *parent = nullptr);
-    ~EventEditDialog();
+    ~EventEditDialog() override;
 
     Event getEvent();
 

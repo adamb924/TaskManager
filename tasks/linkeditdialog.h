@@ -13,7 +13,7 @@ class LinkEditDialog : public QDialog
 
 public:
     explicit LinkEditDialog(const QString & label = QString(), const QString & url = QString(), bool focusUrl = false, QWidget *parent = nullptr);
-    ~LinkEditDialog();
+    ~LinkEditDialog() override;
 
     QString label() const;
     QUrl url() const;

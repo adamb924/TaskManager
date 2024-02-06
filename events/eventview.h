@@ -28,7 +28,7 @@ private slots:
     void onModelReset();
 
 protected:
-    void contextMenuEvent(QContextMenuEvent *e);
+    void contextMenuEvent(QContextMenuEvent *e) override;
 };
 
 #endif // EVENTVIEW_H
