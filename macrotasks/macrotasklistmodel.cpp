@@ -1,5 +1,11 @@
 #include "macrotasklistmodel.h"
 
+#include <QMimeData>
+#include <QDataStream>
+#include <QtDebug>
+
+QString MacrotaskListModel::MACROTASK_MIME_TYPE = "application/taskmanager.macrotask";
+
 MacrotaskListModel::MacrotaskListModel(QList<Macrotask> *macrotaskList, QObject *parent)
     : QAbstractListModel(parent),
     mMacrotaskList(macrotaskList)
@@ -31,6 +37,7 @@ QVariant MacrotaskListModel::data(const QModelIndex &index, int role) const
 
 bool MacrotaskListModel::insertRows(int row, int count, const QModelIndex &parent)
 {
+    qDebug() << "MacrotaskListModel::insertRows" << row << count << parent;
     beginInsertRows(parent, row, row+count);
     for(int i=0; i<count; i++)
         mMacrotaskList->insert(row, Macrotask());
@@ -40,11 +47,34 @@ bool MacrotaskListModel::insertRows(int row, int count, const QModelIndex &paren
 
 bool MacrotaskListModel::removeRows(int row, int count, const QModelIndex &parent)
 {
+    qDebug() << "MacrotaskListModel::removeRows" << row << count << parent;
     beginRemoveRows(parent, row, row+count);
     for(int i=0; i<count; i++)
         mMacrotaskList->removeAt(row);
     endRemoveRows();
     return count > 0;
+}
+
+Qt::DropActions MacrotaskListModel::supportedDropActions() const
+{
+    return Qt::CopyAction | Qt::MoveAction | Qt::TargetMoveAction;
+}
+
+
+bool MacrotaskListModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+{
+    Q_UNUSED(sourceParent) /// invalid
+    Q_UNUSED(destinationParent) /// invalid
+    Q_UNUSED(count) /// must be 1
+
+    emit layoutAboutToBeChanged();
+
+    Macrotask t = mMacrotaskList->takeAt(sourceRow);
+    if( sourceRow < destinationChild )
+        destinationChild--;
+    mMacrotaskList->insert(destinationChild, t);
+    emit layoutChanged();
+    return true;
 }
 
 bool MacrotaskListModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -60,7 +90,7 @@ bool MacrotaskListModel::setData(const QModelIndex &index, const QVariant &value
 Qt::ItemFlags MacrotaskListModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return Qt::NoItemFlags;
+        return QAbstractItemModel::flags(index) | Qt::ItemIsDropEnabled;
 
-    return QAbstractItemModel::flags(index);
+    return QAbstractItemModel::flags(index) | Qt::ItemIsDragEnabled;
 }

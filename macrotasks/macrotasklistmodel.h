@@ -21,6 +21,9 @@ public:
     bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
 
+    Qt::DropActions supportedDropActions() const override;
+    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild) override;
+
     // Editable:
     bool setData(const QModelIndex &index, const QVariant &value,
                  int role = Qt::EditRole) override;
@@ -29,6 +32,7 @@ public:
 
 private:
     QList<Macrotask> * mMacrotaskList;
+    static QString MACROTASK_MIME_TYPE;
 };
 
 #endif // MACROTASKLISTMODEL_H

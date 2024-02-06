@@ -1,5 +1,6 @@
 #include "macrotask.h"
 
+#include <QtDebug>
 #include <QSize>
 #include <QPainter>
 #include <QPalette>
@@ -19,6 +20,23 @@ Macrotask::Macrotask(const QString &header, const QString &description) : mHeade
 Macrotask::Macrotask(const Macrotask &other) : mHeader(other.header()), mDescription(other.description())
 {
 
+}
+
+QDataStream & operator << (QDataStream &arch, const Macrotask & object)
+{
+    arch << object.header();
+    arch << object.description();
+    return arch;
+}
+
+QDataStream & operator >> (QDataStream &arch, Macrotask & object)
+{
+    QString str;
+    arch >> str;
+    object.setHeader(str);
+    arch >> str;
+    object.setDescription(str);
+    return arch;
 }
 
 QString Macrotask::header() const
@@ -65,4 +83,10 @@ void Macrotask::paint(QPainter *painter, const QRect &rect, const QPalette &pale
 QSize Macrotask::sizeHint() const
 {
     return QSize(MACROTASK_SIZE,MACROTASK_SIZE);
+}
+
+QDebug operator<<(QDebug dbg, const Macrotask &key)
+{
+    dbg.nospace() << "Macrotask(Header: " << key.header() << ", Description: " << key.description() << ")";
+    return dbg.maybeSpace();
 }

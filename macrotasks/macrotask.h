@@ -16,6 +16,9 @@ public:
     Macrotask(const QString & header, const QString & description);
     Macrotask(const Macrotask & other);
 
+    friend QDataStream & operator<<(QDataStream &arch, const Macrotask & object);
+    friend QDataStream & operator>>(QDataStream &arch, Macrotask & object);
+
     QString header() const;
     void setHeader(const QString &newHeader);
 
@@ -33,5 +36,7 @@ private:
 };
 
 Q_DECLARE_METATYPE(Macrotask)
+
+QDebug operator<<(QDebug dbg, const Macrotask &key);
 
 #endif // MACROTASK_H

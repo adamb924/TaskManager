@@ -221,8 +221,11 @@
        <property name="verticalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
+       <property name="dragEnabled">
+        <bool>true</bool>
+       </property>
        <property name="dragDropMode">
-        <enum>QAbstractItemView::DragDrop</enum>
+        <enum>QAbstractItemView::InternalMove</enum>
        </property>
        <property name="defaultDropAction">
         <enum>Qt::MoveAction</enum>
@@ -232,6 +235,12 @@
        </property>
        <property name="flow">
         <enum>QListView::LeftToRight</enum>
+       </property>
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <property name="selectionRectVisible">
+        <bool>true</bool>
        </property>
       </widget>
      </widget>

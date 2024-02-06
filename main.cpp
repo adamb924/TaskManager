@@ -10,6 +10,8 @@
 
 int main(int argc, char *argv[])
 {
+    qRegisterMetaTypeStreamOperators<Macrotask>("Macrotask");
+
     QSharedMemory sharedMemory;
     sharedMemory.setKey("com.adambaker.taskmanager");
 
