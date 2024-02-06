@@ -3,13 +3,13 @@
 #include "ui_archive.h"
 #include "ui_preferencesdialog.h"
 
-#include "itemproxymodel.h"
-#include "list.h"
-#include "filterwidget.h"
-#include "eventitemmodel.h"
-#include "event.h"
-#include "eventview.h"
-#include "eventdayfilter.h"
+#include "tasks/itemproxymodel.h"
+#include "tasks/list.h"
+#include "tasks/filterwidget.h"
+#include "events/eventitemmodel.h"
+#include "events/event.h"
+#include "events/eventview.h"
+#include "events/eventdayfilter.h"
 
 #include <QtWidgets>
 #include <QAbstractItemModel>

@@ -11,35 +11,35 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-    event.cpp \
-    eventdayfilter.cpp \
-    eventeditdialog.cpp \
-    eventitemmodel.cpp \
-    eventview.cpp \
-    filterwidget.cpp \
-    itemproxymodel.cpp \
-    linkeditdialog.cpp \
-    list.cpp \
+    events/event.cpp \
+    events/eventdayfilter.cpp \
+    events/eventeditdialog.cpp \
+    events/eventitemmodel.cpp \
+    events/eventview.cpp \
+    tasks/filterwidget.cpp \
+    tasks/itemproxymodel.cpp \
+    tasks/linkeditdialog.cpp \
+    tasks/list.cpp \
         mainwindow.cpp \
-    listview.cpp
+    tasks/listview.cpp
 
 HEADERS  += mainwindow.h \
-    event.h \
-    eventdayfilter.h \
-    eventeditdialog.h \
-    eventitemmodel.h \
-    eventview.h \
-    filterwidget.h \
-    itemproxymodel.h \
-    linkeditdialog.h \
-    list.h \
-    listview.h
+    events/event.h \
+    events/eventdayfilter.h \
+    events/eventeditdialog.h \
+    events/eventitemmodel.h \
+    events/eventview.h \
+    tasks/filterwidget.h \
+    tasks/itemproxymodel.h \
+    tasks/linkeditdialog.h \
+    tasks/list.h \
+    tasks/listview.h
 
 FORMS += \
-    eventeditdialog.ui \
-    filterwidget.ui \
-    linkeditdialog.ui \
+    events/eventeditdialog.ui \
+    tasks/filterwidget.ui \
+    tasks/linkeditdialog.ui \
     mainwindow.ui \
-    archive.ui \
+    tasks/archive.ui \
     preferencesdialog.ui
 RC_ICONS = icons/TaskManager.ico

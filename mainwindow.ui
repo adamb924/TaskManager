@@ -221,7 +221,7 @@
   <customwidget>
    <class>ListView</class>
    <extends>QTreeView</extends>
-   <header>listview.h</header>
+   <header>tasks/listview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
