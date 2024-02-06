@@ -1,10 +1,4 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2011-01-16T14:24:32
-#
-#-------------------------------------------------
-
-QT       += core gui widgets sql
+QT       += core gui widgets
 
 TARGET = TaskManager
 TEMPLATE = app
