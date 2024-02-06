@@ -20,8 +20,12 @@ public:
 
     Macrotask task() const;
 
+private slots:
+    void chooseBackgroundColor();
+
 private:
     Ui::MacrotaskDialog *ui;
+    QColor mColor;
 };
 
 #endif // MACROTASKDIALOG_H

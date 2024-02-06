@@ -237,10 +237,10 @@
         <enum>QListView::LeftToRight</enum>
        </property>
        <property name="spacing">
-        <number>2</number>
+        <number>0</number>
        </property>
        <property name="selectionRectVisible">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </widget>

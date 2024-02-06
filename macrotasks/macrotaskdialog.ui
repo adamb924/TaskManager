@@ -22,7 +22,18 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="headerEdit"/>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLineEdit" name="headerEdit"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="backgroundColorButton">
+       <property name="text">
+        <string>Background Color</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QLabel" name="label_2">
@@ -80,5 +91,24 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>backgroundColorButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MacrotaskDialog</receiver>
+   <slot>chooseBackgroundColor()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>337</x>
+     <y>43</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>chooseBackgroundColor()</slot>
+ </slots>
 </ui>

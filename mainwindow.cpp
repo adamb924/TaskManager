@@ -182,6 +182,7 @@ void MainWindow::serializeMacrotask(const Macrotask &m, QXmlStreamWriter *stream
 {
     stream->writeStartElement("macrotask");
     stream->writeAttribute("header", m.header() );
+    stream->writeAttribute("color", m.color().name() );
     stream->writeCharacters(m.description());
     stream->writeEndElement(); // macrotask
 }
@@ -392,6 +393,9 @@ void MainWindow::readXmlData(QString path )
                 Macrotask task;
                 if( attributes.hasAttribute("header") ) {
                     task.setHeader( attributes.value("header").toString() );
+                }
+                if( attributes.hasAttribute("color") ) {
+                    task.setColor( QColor( attributes.value("color").toString() ) );
                 }
                 task.setDescription( stream.readElementText() );
                 mMacrotasks << task;

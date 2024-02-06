@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QMessageBox>
+#include <QtDebug>
 
 #include "macrotaskdialog.h"
 

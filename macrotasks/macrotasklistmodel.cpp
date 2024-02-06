@@ -37,7 +37,6 @@ QVariant MacrotaskListModel::data(const QModelIndex &index, int role) const
 
 bool MacrotaskListModel::insertRows(int row, int count, const QModelIndex &parent)
 {
-    qDebug() << "MacrotaskListModel::insertRows" << row << count << parent;
     beginInsertRows(parent, row, row+count);
     for(int i=0; i<count; i++)
         mMacrotaskList->insert(row, Macrotask());
@@ -47,7 +46,6 @@ bool MacrotaskListModel::insertRows(int row, int count, const QModelIndex &paren
 
 bool MacrotaskListModel::removeRows(int row, int count, const QModelIndex &parent)
 {
-    qDebug() << "MacrotaskListModel::removeRows" << row << count << parent;
     beginRemoveRows(parent, row, row+count);
     for(int i=0; i<count; i++)
         mMacrotaskList->removeAt(row);

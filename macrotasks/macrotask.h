@@ -1,6 +1,7 @@
 #ifndef MACROTASK_H
 #define MACROTASK_H
 
+#include <QColor>
 #include <QString>
 #include <QMetaType>
 
@@ -13,7 +14,7 @@ class Macrotask
 {
 public:
     Macrotask();
-    Macrotask(const QString & header, const QString & description);
+    Macrotask(const QString & header, const QString & description, const QColor & color = QColor(255,255,255) );
     Macrotask(const Macrotask & other);
 
     friend QDataStream & operator<<(QDataStream &arch, const Macrotask & object);
@@ -30,9 +31,13 @@ public:
 
     static int MACROTASK_SIZE;
 
+    QColor color() const;
+    void setColor(const QColor &newColor);
+
 private:
     QString mHeader;
     QString mDescription;
+    QColor mColor;
 };
 
 Q_DECLARE_METATYPE(Macrotask)
