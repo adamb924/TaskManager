@@ -33,7 +33,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
     enum ListType { UrgentImportant, NotUrgentImportant, UrgentNotImportant, NotUrgentNotImportant, Archive };
     enum DataType { Label = Qt::UserRole+1, DateCompleted, JustChanged, Url, DateCreated, OriginList, PutOnHold };
@@ -84,7 +84,7 @@ private:
     bool mShowEvents;
     bool mShowMacrotasks;
 
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
     void serializeModel(List * list, QXmlStreamWriter *stream) const;
     void serializeItem(List * list, QStandardItem * item, QXmlStreamWriter *stream) const;
     void serializeEvent(Event * e, QXmlStreamWriter *stream) const;
