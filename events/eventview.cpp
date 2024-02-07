@@ -120,16 +120,3 @@ void EventView::contextMenuEvent(QContextMenuEvent *e)
 
     menu.exec(e->globalPos());
 }
-
-void EventView::setEventModel(QAbstractItemModel *m)
-{
-    QTreeView::setModel(m);
-
-    connect( m, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), this, SLOT(spanFirstColumns()));
-    connect( m, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), this, SLOT(expandAll()));
-    connect( m, SIGNAL(modelReset()), this, SLOT(onModelReset()));
-
-    /// get things started
-    spanFirstColumns();
-    expandAll();
-}

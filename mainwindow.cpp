@@ -491,7 +491,14 @@ void MainWindow::setupEventSplitters()
 
         EventDayFilter *proxy = new EventDayFilter(startDate, endDate, first, this);
         proxy->setSourceModel(mEventModel);
-        view->setEventModel(proxy);
+        view->setModel(proxy);
+        connect( proxy, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), view, SLOT(spanFirstColumns()));
+        connect( proxy, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), view, SLOT(expandAll()));
+        connect( proxy, SIGNAL(modelReset()), view, SLOT(onModelReset()));
+        /// get things started
+        view->spanFirstColumns();
+        view->expandAll();
+
         ui->eventSplitter->addWidget(view);
 
         startDate = endDate.addDays(1);
@@ -503,7 +510,14 @@ void MainWindow::setupEventSplitters()
     remainderView->setToolTip( tr("%1 and following").arg( startDate.toString() ) );
     EventDayFilter *proxy = new EventDayFilter(startDate, QDate(), false, this);
     proxy->setSourceModel(mEventModel);
-    remainderView->setEventModel(proxy);
+    remainderView->setModel(proxy);
+    connect( mEventModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), remainderView, SLOT(spanFirstColumns()));
+    connect( mEventModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)), remainderView, SLOT(expandAll()));
+    connect( mEventModel, SIGNAL(modelReset()), remainderView, SLOT(onModelReset()));
+    /// get things started
+    remainderView->spanFirstColumns();
+    remainderView->expandAll();
+
     ui->eventSplitter->addWidget(remainderView);
 }
 

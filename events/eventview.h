@@ -13,7 +13,8 @@ class EventView : public QTreeView
 public:
     EventView(QWidget *parent);
 
-    void setEventModel(QAbstractItemModel *m);
+public slots:
+    void spanFirstColumns();
 
 signals:
     void addEvent(Event * e);
@@ -24,7 +25,6 @@ private slots:
     void addEvent();
     void editEvent();
     void removeEvent();
-    void spanFirstColumns();
     void onModelReset();
 
 protected:
