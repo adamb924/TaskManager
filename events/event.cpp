@@ -11,6 +11,11 @@ Event::Event(const QString &label, const QDateTime &dateTime) : mLabel(label), m
 {
 }
 
+Event::Event(const Event &other) : mLabel(other.mLabel), mDateTime(other.mDateTime), mCompleted(other.mCompleted)
+{
+
+}
+
 bool Event::operator<(const Event &other) const
 {
     return mDateTime < other.mDateTime;

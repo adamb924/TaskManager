@@ -3,12 +3,14 @@
 
 #include <QString>
 #include <QDateTime>
+#include <QMetaType>
 
 class Event
 {
 public:
     Event();
     Event(const QString & label, const QDateTime & dateTime);
+    Event(const Event & other);
 
     bool operator<(const Event & other) const;
     bool operator>=(const Event & other) const;
@@ -30,6 +32,8 @@ private:
     QDateTime mDateTime;
     bool mCompleted;
 };
+
+Q_DECLARE_METATYPE(Event)
 
 QDebug operator<<(QDebug dbg, const Event &key);
 
