@@ -12,7 +12,7 @@ public:
 protected:
     void contextMenuEvent(QContextMenuEvent *e) override;
     void addMacrotask(int where);
-    void editMacrotask(int which);
+    void editMacrotask(const QModelIndex &index);
     void removeMacrotask(int which);
 
 };

@@ -11,7 +11,7 @@
 
 MacrotaskView::MacrotaskView(QWidget *parent) : QListView(parent)
 {
-
+    connect(this, &QAbstractItemView::doubleClicked, this, &MacrotaskView::editMacrotask);
 }
 
 void MacrotaskView::contextMenuEvent(QContextMenuEvent *e)
@@ -21,7 +21,7 @@ void MacrotaskView::contextMenuEvent(QContextMenuEvent *e)
     QModelIndex index = indexAt(e->pos());
     if( index.isValid() )
     {
-        menu.addAction(tr("Edit task..."), this, [&, this](){ editMacrotask( index.row() ); });
+        menu.addAction(tr("Edit task..."), this, [&, this](){ editMacrotask( index ); });
     }
 
     menu.addAction(tr("Add task here..."), this, [&, this](){ addMacrotask( index.isValid() ? index.row() : model()->rowCount() ); });
@@ -45,9 +45,8 @@ void MacrotaskView::addMacrotask(int where)
     }
 }
 
-void MacrotaskView::editMacrotask(int which)
+void MacrotaskView::editMacrotask(const QModelIndex & index)
 {
-    QModelIndex index = model()->index(which,0); /// there ought only ever to be one anyway
     MacrotaskDialog dlg( qvariant_cast<Macrotask>(index.data()),  this);
     if( dlg.exec() == QDialog::Accepted )
     {
