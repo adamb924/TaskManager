@@ -16,6 +16,11 @@ Event::Event(const Event &other) : mLabel(other.mLabel), mDateTime(other.mDateTi
 
 }
 
+bool Event::operator==(const Event &other) const
+{
+    return mLabel == other.mLabel && mDateTime == other.mDateTime && mCompleted == other.mCompleted;
+}
+
 bool Event::operator<(const Event &other) const
 {
     return mDateTime < other.mDateTime;
@@ -26,9 +31,22 @@ bool Event::operator>=(const Event &other) const
     return mDateTime >= other.mDateTime;
 }
 
+bool Event::compare(const Event &a, const Event &b)
+{
+    if( a.dateTime() < b.dateTime() )
+        return true;
+    else if( a.dateTime() == b.dateTime() && a.label() < b.label() )
+        return true;
+    return false;
+}
+
 bool Event::pointerComparison(const Event *a, const Event *b)
 {
-    return *a < *b;
+    if( a->dateTime() < b->dateTime() )
+        return true;
+    else if( a->dateTime() == b->dateTime() && a->label() < b->label() )
+        return true;
+    return false;
 }
 
 QString Event::label() const

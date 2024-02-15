@@ -12,8 +12,10 @@ public:
     Event(const QString & label, const QDateTime & dateTime);
     Event(const Event & other);
 
+    bool operator==(const Event & other) const;
     bool operator<(const Event & other) const;
     bool operator>=(const Event & other) const;
+    static bool compare(const Event & a, const Event & b);
     static bool pointerComparison(const Event * a, const Event * b);
 
     QString label() const;
