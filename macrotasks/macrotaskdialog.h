@@ -15,7 +15,7 @@ class MacrotaskDialog : public QDialog
 
 public:
     explicit MacrotaskDialog(QWidget *parent = nullptr);
-    MacrotaskDialog(const Macrotask & task, QWidget *parent = nullptr);
+    explicit MacrotaskDialog(const Macrotask &task, QWidget *parent = nullptr);
     ~MacrotaskDialog() override;
 
     Macrotask task() const;

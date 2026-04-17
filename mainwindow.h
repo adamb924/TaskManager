@@ -39,8 +39,6 @@ public:
     enum DataType { Label = Qt::UserRole+1, DateCompleted, JustChanged, Url, DateCreated, OriginList, PutOnHold };
     static QStandardItem* newItem(bool checked, const QString & label, const QDateTime & dateCreated = QDateTime(), const QDateTime & dateCompleted = QDateTime(), const QUrl &url = QString() );
 
-    void setupFilterDock();
-
 public slots:
     void showArchive();
     void preferences();
@@ -59,6 +57,8 @@ private slots:
     void checkForNoMatches();
 
 private:
+    void setupFilterDock();
+
     Ui::MainWindow *ui;
     Ui::Archive *archiveUi;
 

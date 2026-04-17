@@ -16,6 +16,14 @@ Event::Event(const Event &other) : mLabel(other.mLabel), mDateTime(other.mDateTi
 
 }
 
+Event &Event::operator=(const Event &other)
+{
+    mLabel = other.mLabel;
+    mDateTime = other.mDateTime;
+    mCompleted = other.mCompleted;
+    return *this;
+}
+
 bool Event::operator==(const Event &other) const
 {
     return mLabel == other.mLabel && mDateTime == other.mDateTime && mCompleted == other.mCompleted;

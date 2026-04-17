@@ -11,7 +11,7 @@ class EventView : public QTreeView
 {
     Q_OBJECT
 public:
-    EventView(QWidget *parent);
+    explicit EventView(QWidget *parent);
 
 public slots:
     void spanFirstColumns();

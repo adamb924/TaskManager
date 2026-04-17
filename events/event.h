@@ -11,6 +11,7 @@ public:
     Event();
     Event(const QString & label, const QDateTime & dateTime);
     Event(const Event & other);
+    Event &operator=(const Event &other);
 
     bool operator==(const Event & other) const;
     bool operator<(const Event & other) const;

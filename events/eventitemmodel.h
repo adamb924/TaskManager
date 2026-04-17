@@ -11,7 +11,7 @@ class EventItemModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    EventItemModel(QList<Event *> *events, QObject *parent = nullptr);
+    explicit EventItemModel(QList<Event *> *events, QObject *parent = nullptr);
 
     enum ItemRole { Date = Qt::UserRole + 1, Type };
     enum ItemType { NoType, DateType, EventType };

@@ -21,12 +21,13 @@
 #include <QStack>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
-      ui(new Ui::MainWindow),
-      archiveUi(new Ui::Archive),
-      mDateFormat("MM/dd/yyyy"),
-      mShowEvents(true),
-    mShowMacrotasks(true)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , archiveUi(new Ui::Archive)
+    , mDateFormat("MM/dd/yyyy")
+    , mFilterDock(nullptr)
+    , mShowEvents(true)
+    , mShowMacrotasks(true)
 {
     ui->setupUi(this);
 
@@ -675,6 +676,8 @@ void MainWindow::itemChanged(QStandardItem *item)
 
 void MainWindow::setupFilterDock()
 {
+    if (mFilterDock != nullptr)
+        delete mFilterDock;
     mFilterDock = new QDockWidget(this);
     mFilterDock->setObjectName(tr("filterDock"));
     mFilterDock->setTitleBarWidget(new QWidget());
