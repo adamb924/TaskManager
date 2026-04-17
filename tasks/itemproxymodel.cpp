@@ -52,7 +52,9 @@ QVariant ItemProxyModel::data(const QModelIndex &index, int role) const
   {
       if( completed.isValid() )
       {
-          return tr("%1 (%2)").arg( item->data(MainWindow::Label).toString() ).arg( item->data(MainWindow::DateCompleted).toDateTime().toString( mDateFormat ) );
+          return tr("%1 (%2)")
+              .arg(item->data(MainWindow::Label).toString(),
+                   item->data(MainWindow::DateCompleted).toDateTime().toString(mDateFormat));
       }
       else
       {
