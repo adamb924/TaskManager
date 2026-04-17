@@ -4,3 +4,4 @@
 *.8-pre1
 taskmanager-cppcheck-build-dir/
 TaskManager.pro.user.4.10-pre1
+/build

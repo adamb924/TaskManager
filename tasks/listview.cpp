@@ -21,6 +21,11 @@ ListView::ListView(QWidget *parent) : QTreeView(parent)
 {
     setAcceptDrops(true);
     setMouseTracking(true);
+
+    QPalette pal = palette();
+    pal.setColor(QPalette::Base, Qt::white);
+    pal.setColor(QPalette::AlternateBase, Qt::white);
+    setPalette(pal);
 }
 
 void ListView::contextMenuEvent(QContextMenuEvent *e)
@@ -183,7 +188,7 @@ void ListView::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasUrls())
     {
-        QModelIndex index = indexAt( event->pos() );
+        QModelIndex index = indexAt(event->position().toPoint());
         ItemProxyModel * ipm = qobject_cast<ItemProxyModel *>(model());
         QStandardItemModel * m = qobject_cast<QStandardItemModel *>(ipm->sourceModel());
         QStandardItem *item = m->itemFromIndex( ipm->mapToSource( index ) );

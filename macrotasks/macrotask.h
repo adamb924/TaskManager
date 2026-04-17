@@ -16,6 +16,7 @@ public:
     Macrotask();
     Macrotask(const QString & header, const QString & description, const QColor & color = QColor(255,255,255) );
     Macrotask(const Macrotask & other);
+    Macrotask &operator=(const Macrotask &other);
 
     friend QDataStream & operator<<(QDataStream &arch, const Macrotask & object);
     friend QDataStream & operator>>(QDataStream &arch, Macrotask & object);

@@ -1,7 +1,8 @@
 #include <QApplication>
-#include <QSharedMemory>
 #include <QMessageBox>
+#include <QMetaType>
 #include <QObject>
+#include <QSharedMemory>
 #include "mainwindow.h"
 
 #ifdef _WIN32
@@ -10,7 +11,11 @@
 
 int main(int argc, char *argv[])
 {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     qRegisterMetaTypeStreamOperators<Macrotask>("Macrotask");
+#else
+    qRegisterMetaType<Macrotask>("Macrotask");
+#endif
 
     QSharedMemory sharedMemory;
     sharedMemory.setKey("com.adambaker.taskmanager");

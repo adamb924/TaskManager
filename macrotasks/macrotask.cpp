@@ -28,6 +28,14 @@ Macrotask::Macrotask(const Macrotask &other)
 
 }
 
+Macrotask &Macrotask::operator=(const Macrotask &other)
+{
+    mHeader = other.mHeader;
+    mDescription = other.mDescription;
+    mColor = other.mColor;
+    return *this;
+}
+
 QDataStream & operator << (QDataStream &arch, const Macrotask & object)
 {
     arch << object.header();

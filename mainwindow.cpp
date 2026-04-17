@@ -198,7 +198,9 @@ bool MainWindow::writeXmlData(QString path )
         return false;
 
     QXmlStreamWriter stream(&outFile);
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     stream.setCodec("UTF-8");
+#endif
     stream.setAutoFormatting(true);
     stream.writeStartDocument();
     stream.writeStartElement("task-manager");
@@ -487,7 +489,7 @@ void MainWindow::setupEventSplitters()
         QDate endDate = startDate.addDays( division - 1 );
 
         EventView *view = new EventView(this);
-        view->setToolTip( tr("%1 through %2").arg( startDate.toString() ).arg( endDate.toString() ) );
+        view->setToolTip(tr("%1 through %2").arg(startDate.toString(), endDate.toString()));
 
         EventDayFilter *proxy = new EventDayFilter(startDate, endDate, first, this);
         proxy->setSourceModel(mEventModel);
@@ -559,34 +561,34 @@ void MainWindow::showArchive()
 
 void MainWindow::preferences()
 {
-    QDialog *dlg = new QDialog;
-    Ui::PreferencesDialog *preferencesUi = new Ui::PreferencesDialog;
-    preferencesUi->setupUi(dlg);
-    preferencesUi->ul->setText( ui->ul->text() );
-    preferencesUi->ur->setText( ui->ur->text() );
-    preferencesUi->ll->setText( ui->ll->text() );
-    preferencesUi->lr->setText( ui->lr->text() );
-    preferencesUi->date->setText( mDateFormat );
-    preferencesUi->showEventsCheckBox->setChecked(mShowEvents);
-    preferencesUi->showMacrotasksCheckBox->setChecked(mShowMacrotasks);
+    QDialog dlg;
+    Ui::PreferencesDialog preferencesUi;
+    preferencesUi.setupUi(&dlg);
+    preferencesUi.ul->setText(ui->ul->text());
+    preferencesUi.ur->setText(ui->ur->text());
+    preferencesUi.ll->setText(ui->ll->text());
+    preferencesUi.lr->setText(ui->lr->text());
+    preferencesUi.date->setText(mDateFormat);
+    preferencesUi.showEventsCheckBox->setChecked(mShowEvents);
+    preferencesUi.showMacrotasksCheckBox->setChecked(mShowMacrotasks);
 
-    preferencesUi->eventGroupingsEdit->setText( eventDivisionsString() );
-    preferencesUi->eventGroupingsEdit->setValidator( new QRegularExpressionValidator( QRegularExpression("(\\d+\\s*,\\s*)*"), this) );
+    preferencesUi.eventGroupingsEdit->setText(eventDivisionsString());
+    preferencesUi.eventGroupingsEdit->setValidator(
+        new QRegularExpressionValidator(QRegularExpression("(\\d+\\s*,\\s*)*"), this));
 
-    if( dlg->exec() )
-    {
-        ui->ul->setText( preferencesUi->ul->text() );
-        ui->ur->setText( preferencesUi->ur->text() );
-        ui->ll->setText( preferencesUi->ll->text() );
-        ui->lr->setText( preferencesUi->lr->text() );
+    if (dlg.exec()) {
+        ui->ul->setText(preferencesUi.ul->text());
+        ui->ur->setText(preferencesUi.ur->text());
+        ui->ll->setText(preferencesUi.ll->text());
+        ui->lr->setText(preferencesUi.lr->text());
 
-        mDateFormat = preferencesUi->date->text();
+        mDateFormat = preferencesUi.date->text();
         propagateDateTime();
 
-        setEventDivisionsFromString( preferencesUi->eventGroupingsEdit->text() );
+        setEventDivisionsFromString(preferencesUi.eventGroupingsEdit->text());
 
-        mShowEvents = preferencesUi->showEventsCheckBox->isChecked();
-        mShowMacrotasks = preferencesUi->showMacrotasksCheckBox->isChecked();
+        mShowEvents = preferencesUi.showEventsCheckBox->isChecked();
+        mShowMacrotasks = preferencesUi.showMacrotasksCheckBox->isChecked();
         ui->eventWidget->setVisible( mShowEvents );
         ui->macrotaskListView->setVisible( mShowMacrotasks );
     }
