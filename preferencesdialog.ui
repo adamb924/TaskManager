@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>563</width>
-    <height>405</height>
+    <width>601</width>
+    <height>260</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,129 +15,181 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QFormLayout" name="formLayout">
-     <property name="fieldGrowthPolicy">
-      <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-     <property name="labelAlignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-     <item row="1" column="0">
-      <widget class="QLabel" name="upperLeftLabelLabel">
-       <property name="text">
-        <string>Upper left label</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="ul"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="upperRightLabelLabel">
-       <property name="text">
-        <string>Upper right label</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="ur"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="lowerLeftLabelLabel">
-       <property name="text">
-        <string>Lower left label</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="ll"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="lowerRightLabelLabel">
-       <property name="text">
-        <string>Lower right label</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="lr"/>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="dateFormatEGDddMMMMDYyBecomesSunJuly2069Label">
-       <property name="text">
-        <string>Date format </string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLineEdit" name="date"/>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>(e.g., ddd MMMM d yy becomes Sun July 20 69;  hh:mm:ss.zzz becomes 14:13:09.042)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Event Groupings</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="1">
-      <widget class="QLineEdit" name="eventGroupingsEdit"/>
-     </item>
-     <item row="11" column="1">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>(e.g., &quot;7,14&quot; produces separate lists from the next seven days, then the fourteen days after that, and then everything else. Leave it blank if you don't want to break up events like that. Takes effect after the application is restarted.)</string>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0" colspan="2">
-      <widget class="QCheckBox" name="showEventsCheckBox">
-       <property name="text">
-        <string>Show event list</string>
-       </property>
-      </widget>
-     </item>
-     <item row="12" column="0" colspan="2">
-      <widget class="QCheckBox" name="showMacrotasksCheckBox">
-       <property name="text">
-        <string>Show macrotask list</string>
-       </property>
-      </widget>
-     </item>
-     <item row="13" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Task colors</string>
-       </property>
-      </widget>
-     </item>
-     <item row="13" column="1">
-      <widget class="QLineEdit" name="taskColorsEdit"/>
-     </item>
-     <item row="14" column="1">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>(a list of hex values; or leave blank to go with the colors specified in the tag)</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Tasks</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QFormLayout" name="formLayout_2">
+         <item row="0" column="0">
+          <widget class="QLabel" name="upperLeftLabelLabel">
+           <property name="text">
+            <string>Upper left label</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="upperRightLabelLabel">
+           <property name="text">
+            <string>Upper right label</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lowerLeftLabelLabel">
+           <property name="text">
+            <string>Lower left label</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="lowerRightLabelLabel">
+           <property name="text">
+            <string>Lower right label</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="ul"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="ur"/>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="ll"/>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="lr"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Events</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QFormLayout" name="formLayout_3">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="showEventsCheckBox">
+           <property name="text">
+            <string>Show event list</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="dateFormatEGDddMMMMDYyBecomesSunJuly2069Label">
+           <property name="text">
+            <string>Date format </string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="date"/>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>(e.g., ddd MMMM d yy becomes Sun July 20 69;  hh:mm:ss.zzz becomes 14:13:09.042)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>(e.g., &quot;7,14&quot; produces separate lists from the next seven days, then the fourteen days after that, and then everything else. Leave it blank if you don't want to break up events like that. Takes effect after the application is restarted.)</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="eventGroupingsEdit"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Event Groupings</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Macrotasks</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QFormLayout" name="formLayout_4">
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+         </property>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="showMacrotasksCheckBox">
+           <property name="text">
+            <string>Show macrotask list</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Task colors</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="taskColorsEdit"/>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>(a list of hex values; or leave blank to go with the colors specified in the tag)</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
