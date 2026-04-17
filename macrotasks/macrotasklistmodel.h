@@ -11,7 +11,9 @@ class MacrotaskListModel : public QAbstractListModel
 public:
     enum ItemRole { Header = Qt::UserRole + 1, Description };
 
-    explicit MacrotaskListModel(QList<Macrotask> * macrotaskList, QObject *parent = nullptr);
+    MacrotaskListModel(QList<Macrotask> *macrotaskList,
+                       const QList<QColor> &taskColors,
+                       QObject *parent = nullptr);
 
     // Basic functionality:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -30,8 +32,11 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
+    void setTaskColors(const QList<QColor> &newTaskColors);
+
 private:
     QList<Macrotask> * mMacrotaskList;
+    QList<QColor> mTaskColors;
     static QString MACROTASK_MIME_TYPE;
 };
 

@@ -83,6 +83,7 @@ private:
 
     bool mShowEvents;
     bool mShowMacrotasks;
+    QList<QColor> mTaskColors;
 
     void closeEvent(QCloseEvent *event) override;
     void serializeModel(List * list, QXmlStreamWriter *stream) const;
@@ -99,6 +100,10 @@ private:
     QString eventDivisionsString() const;
     void setEventDivisionsFromString(const QString & string);
     void setupEventSplitters();
+
+private:
+    static QString taskColorsToString(const QList<QColor> &colors);
+    static QList<QColor> taskColorsFromString(const QString &str);
 };
 
 #endif // MAINWINDOW_H

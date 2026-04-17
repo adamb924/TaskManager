@@ -6,9 +6,12 @@
 
 QString MacrotaskListModel::MACROTASK_MIME_TYPE = "application/taskmanager.macrotask";
 
-MacrotaskListModel::MacrotaskListModel(QList<Macrotask> *macrotaskList, QObject *parent)
-    : QAbstractListModel(parent),
-    mMacrotaskList(macrotaskList)
+MacrotaskListModel::MacrotaskListModel(QList<Macrotask> *macrotaskList,
+                                       const QList<QColor> &taskColors,
+                                       QObject *parent)
+    : QAbstractListModel(parent)
+    , mMacrotaskList(macrotaskList)
+    , mTaskColors(taskColors)
 {
 }
 
@@ -27,9 +30,17 @@ QVariant MacrotaskListModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if ( role == Qt::DisplayRole)
-    {
+    if (role == Qt::DisplayRole) {
         return QVariant::fromValue( mMacrotaskList->at(index.row()) );
+    } else if (role == Qt::BackgroundRole) {
+        if (mTaskColors.length() == 0)
+            return mMacrotaskList->at(index.row()).color();
+        else
+            return mTaskColors.at(index.row() % mTaskColors.length());
+    } else if (role == MacrotaskListModel::Header) {
+        return mMacrotaskList->at(index.row()).header();
+    } else if (role == MacrotaskListModel::Description) {
+        return mMacrotaskList->at(index.row()).description();
     }
 
     return QVariant();
@@ -91,4 +102,9 @@ Qt::ItemFlags MacrotaskListModel::flags(const QModelIndex &index) const
         return QAbstractItemModel::flags(index) | Qt::ItemIsDropEnabled;
 
     return QAbstractItemModel::flags(index) | Qt::ItemIsDragEnabled;
+}
+
+void MacrotaskListModel::setTaskColors(const QList<QColor> &newTaskColors)
+{
+    mTaskColors = newTaskColors;
 }

@@ -27,11 +27,6 @@ public:
     QString description() const;
     void setDescription(const QString &newDescription);
 
-    void paint(QPainter *painter, const QRect &rect, const QPalette &palette) const;
-    QSize sizeHint() const;
-
-    static int MACROTASK_SIZE;
-
     QColor color() const;
     void setColor(const QColor &newColor);
 

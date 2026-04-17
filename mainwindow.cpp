@@ -80,7 +80,7 @@ MainWindow::MainWindow(QWidget *parent)
     mEventModel = new EventItemModel(&mEvents);
 
     ui->macrotaskListView->setItemDelegate(new MacrotaskItemDelegate(this));
-    mMacrotaskModel = new MacrotaskListModel(&mMacrotasks);
+    mMacrotaskModel = new MacrotaskListModel(&mMacrotasks, mTaskColors);
     ui->macrotaskListView->setModel(mMacrotaskModel);
 
     propagateDateTime();
@@ -214,6 +214,7 @@ bool MainWindow::writeXmlData(QString path )
     stream.writeTextElement("show-events", mShowEvents ? "true" : "false" );
     stream.writeTextElement("show-macrotasks", mShowMacrotasks ? "true" : "false" );
     stream.writeTextElement("event-divisions", eventDivisionsString() );
+    stream.writeTextElement("task-colors", taskColorsToString(mTaskColors));
 
     foreach( List * l, mLists )
     {
@@ -402,6 +403,8 @@ void MainWindow::readXmlData(QString path )
                 }
                 task.setDescription( stream.readElementText() );
                 mMacrotasks << task;
+            } else if (name == "task-colors") {
+                mTaskColors = taskColorsFromString(stream.readElementText());
             }
         }
         else if( stream.tokenType() == QXmlStreamReader::EndElement )
@@ -572,6 +575,7 @@ void MainWindow::preferences()
     preferencesUi.date->setText(mDateFormat);
     preferencesUi.showEventsCheckBox->setChecked(mShowEvents);
     preferencesUi.showMacrotasksCheckBox->setChecked(mShowMacrotasks);
+    preferencesUi.taskColorsEdit->setText(taskColorsToString(mTaskColors));
 
     preferencesUi.eventGroupingsEdit->setText(eventDivisionsString());
     preferencesUi.eventGroupingsEdit->setValidator(
@@ -592,6 +596,9 @@ void MainWindow::preferences()
         mShowMacrotasks = preferencesUi.showMacrotasksCheckBox->isChecked();
         ui->eventWidget->setVisible( mShowEvents );
         ui->macrotaskListView->setVisible( mShowMacrotasks );
+
+        mTaskColors = taskColorsFromString(preferencesUi.taskColorsEdit->text());
+        mMacrotaskModel->setTaskColors(mTaskColors);
     }
 }
 
@@ -750,3 +757,29 @@ void MainWindow::checkForNoMatches()
     }
 }
 
+// QList<QColor> to string: "ffee88 ff0000 ..."
+QString MainWindow::taskColorsToString(const QList<QColor> &colors)
+{
+    QStringList parts;
+    for (const QColor &c : colors)
+        parts.append(QString("%1%2%3")
+                         .arg(c.red(), 2, 16, QChar('0'))
+                         .arg(c.green(), 2, 16, QChar('0'))
+                         .arg(c.blue(), 2, 16, QChar('0')));
+    return parts.join(' ');
+}
+
+// "ffee88 ff0000 ..." to QList<QColor>
+QList<QColor> MainWindow::taskColorsFromString(const QString &str)
+{
+    QList<QColor> colors;
+    for (const QString &part : str.split(' ', Qt::SkipEmptyParts)) {
+        if (part.size() != 6)
+            continue;
+        bool ok;
+        const int rgb = part.toInt(&ok, 16);
+        if (ok)
+            colors.append(QColor((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff));
+    }
+    return colors;
+}
